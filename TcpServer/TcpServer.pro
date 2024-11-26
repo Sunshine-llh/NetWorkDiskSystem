@@ -15,7 +15,8 @@ SOURCES += \
 
 HEADERS += \
     mytcpserver.h \
-    tcpserver.h
+    tcpserver.h \
+    ui_tcpserver.h
 
 FORMS += \
     tcpserver.ui

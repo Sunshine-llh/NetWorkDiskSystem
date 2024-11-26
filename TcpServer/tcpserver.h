@@ -1,14 +1,14 @@
 #ifndef TCPSERVER_H
 #define TCPSERVER_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QFile>
-
+#include "ui_tcpserver.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class TcpServer; }
 QT_END_NAMESPACE
 
-class TcpServer : public QWidget
+class TcpServer : public QMainWindow
 {
 Q_OBJECT
 

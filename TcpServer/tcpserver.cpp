@@ -1,15 +1,14 @@
 #include "tcpserver.h"
-#include "ui_tcpserver.h"
-#include "mytcpserver.h"
+#include <QTcpServer>
 #include <QByteArray>
 #include <QDebug>
 #include <QMessageBox>
 #include <QHostAddress>
 
-TcpServer::TcpServer(QWidget *parent) : QWidget(parent), ui(new Ui::TcpServer)
+TcpServer::TcpServer(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpServer)
 {
-//ui->setupUi(this);
-loadConfig();
+    ui->setupUi(this);
+    loadConfig();
 }
 
 TcpServer::~TcpServer()

@@ -4,9 +4,9 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QHostAddress>
-TcpClient::TcpClient(QWidget *parent) : QWidget(parent), ui(new Ui::TcpClient)
+TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
-    //ui->setupUi();
+    ui->setupUi(this);
     loadConfig();
     //连接服务器
     connect(&m_tcpScoket,SIGNAL(connected()),this,SLOT(showConnect()));
@@ -19,6 +19,7 @@ TcpClient::~TcpClient()
 
 void TcpClient::loadConfig()
 {
+
     QFile file(":/client.config");
     if(file.open(QIODevice::ReadOnly))
     {
