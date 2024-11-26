@@ -10,6 +10,7 @@ TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClien
     loadConfig();
     //连接服务器
     connect(&m_tcpScoket,SIGNAL(connected()),this,SLOT(showConnect()));
+    m_tcpScoket.connectToHost(QHostAddress(m_strIP),m_usPort);
 }
 
 TcpClient::~TcpClient()
