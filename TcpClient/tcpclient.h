@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFile>
 #include <QTcpSocket>
+#include <protocol.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class TcpClient; }
 QT_END_NAMESPACE
@@ -18,6 +19,9 @@ public:
     void loadConfig();
 public slots:
     void showConnect();
+private slots:
+    void on_send_clicked();
+
 private:
     Ui::TcpClient *ui;
     QString m_strIP;

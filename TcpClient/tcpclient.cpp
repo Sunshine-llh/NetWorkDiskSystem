@@ -43,3 +43,25 @@ void TcpClient::showConnect()
 {
     QMessageBox::information(this,"连接服务器","SUCESS!!!");
 }
+
+void TcpClient::on_send_clicked()
+{
+    QString linemsg=ui->linetext->text();
+    //调用MPD函数
+    if(!linemsg.isEmpty()){
+        PDU *pdu=mkPDU(linemsg.size());
+        pdu->uiMsgType=8888;
+        pdu->uiMsgLen=linemsg.size();
+        memcpy(pdu->caMsg,linemsg.toStdString().c_str(),linemsg.size());
+        m_tcpScoket.write((char *)pdu,pdu->uiPDULen);
+        //释放pdu
+        free(pdu);
+        pdu=NULL;
+    }else
+    {
+        QMessageBox::warning(this,"信息发送","发送的信息不能为空");
+    }
+
+
+}
+

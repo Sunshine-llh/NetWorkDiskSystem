@@ -13,33 +13,33 @@ TcpServer::TcpServer(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpServe
 
 TcpServer::~TcpServer()
 {
-delete ui;
+    delete ui;
 }
 
 void TcpServer::loadConfig()
 {
-QTcpServer *mTcpServer = new QTcpServer(this);;//服务器对象
-QHostAddress mHostAddress;//本地IP地址
-quint16 _port;
-QFile file(":/server.config");
-if(file.open(QIODevice::ReadOnly))
-{
-QByteArray baData = file.readAll();
-QString strData = baData.toStdString().c_str();
-strData.replace("\r\n"," ");
-QStringList strList = strData.split(" ");
-m_strIP = strList.at(0);
-m_usPort = strList.at(1).toUShort();
-mHostAddress.setAddress(m_strIP);
-_port = m_usPort;
-mTcpServer->listen(mHostAddress,_port);
-connect(mTcpServer,&QTcpServer::newConnection,this,[=]{
-    qDebug() << "new client connected";;
-    });
-    file.close();
+    QTcpServer *mTcpServer = new QTcpServer(this);;//服务器对象
+    QHostAddress mHostAddress;//本地IP地址
+    quint16 _port;
+    QFile file(":/server.config");
+    if(file.open(QIODevice::ReadOnly))
+    {
+        QByteArray baData = file.readAll();
+        QString strData = baData.toStdString().c_str();
+        strData.replace("\r\n"," ");
+        QStringList strList = strData.split(" ");
+        m_strIP = strList.at(0);
+        m_usPort = strList.at(1).toUShort();
+        mHostAddress.setAddress(m_strIP);
+        _port = m_usPort;
+        mTcpServer->listen(mHostAddress,_port);
+        connect(mTcpServer,&QTcpServer::newConnection,this,[=]{
+            qDebug() << "new client connected";;
+        });
+        file.close();
     }
     else
     {
-    QMessageBox::critical(this,"open config","open config failed");
+        QMessageBox::critical(this,"open config","open config failed");
     }
-    }
+}
