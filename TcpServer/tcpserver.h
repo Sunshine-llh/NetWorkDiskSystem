@@ -16,7 +16,7 @@ public:
 TcpServer(QWidget *parent = nullptr);
 ~TcpServer();
 void loadConfig();
-
+void listening();
 private:
 Ui::TcpServer *ui;
 QString m_strIP;

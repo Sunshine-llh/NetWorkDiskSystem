@@ -18,7 +18,7 @@ TcpServer::~TcpServer()
 
 void TcpServer::loadConfig()
 {
-    QTcpServer *mTcpServer = new QTcpServer(this);;//服务器对象
+    QTcpServer *mTcpServer = new QTcpServer(this);//服务器对象
     QHostAddress mHostAddress;//本地IP地址
     quint16 _port;
     QFile file(":/server.config");
@@ -42,4 +42,10 @@ void TcpServer::loadConfig()
     {
         QMessageBox::critical(this,"open config","open config failed");
     }
+}
+void TcpServer::listening()
+{
+    //如果监听到client端的用户请求
+   // QTcpServer *mTcpServer = new QTcpServer(this);
+    //connect(mTcpServer,&QTcpServer::newConnection,)
 }

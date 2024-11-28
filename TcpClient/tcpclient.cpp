@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QHostAddress>
+#include <QDebug>
 TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
@@ -46,21 +47,21 @@ void TcpClient::showConnect()
 
 void TcpClient::on_send_clicked()
 {
-    QString linemsg=ui->linetext->text();
-    //调用MPD函数
-    if(!linemsg.isEmpty()){
-        PDU *pdu=mkPDU(linemsg.size());
-        pdu->uiMsgType=8888;
-        pdu->uiMsgLen=linemsg.size();
-        memcpy(pdu->caMsg,linemsg.toStdString().c_str(),linemsg.size());
-        m_tcpScoket.write((char *)pdu,pdu->uiPDULen);
-        //释放pdu
-        free(pdu);
-        pdu=NULL;
-    }else
-    {
-        QMessageBox::warning(this,"信息发送","发送的信息不能为空");
-    }
+    QString strMsg = ui->linetext->text();
+       if(!strMsg.isEmpty())
+       {
+           PDU *pdu = mkPDU(strMsg.size());
+           pdu->uiMsgType = 8888;
+           memcpy(pdu->caMsg,strMsg.toStdString().c_str(),strMsg.size());
+           m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+           qDebug() << "111";
+           free(pdu);
+           pdu = NULL;
+       }
+       else
+       {
+           QMessageBox::warning(this,"信息发送","发送的信息不能为空");
+       }
 
 
 }
