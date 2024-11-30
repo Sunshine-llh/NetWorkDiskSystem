@@ -17,6 +17,6 @@ void MyTcpServer::incomingConnection(qintptr handle)
     //qDebug() << "new client connected";
     MyTcpSocket *pTcpSocket = new MyTcpSocket;
     pTcpSocket->setSocketDescriptor(handle);
-    qDebug() << "1111";
+    qDebug() << "连接成功！！！";
     mysocketlist.append(pTcpSocket);
 }

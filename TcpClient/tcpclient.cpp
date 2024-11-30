@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QHostAddress>
 #include <QDebug>
+#include <string.h>
 TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
@@ -45,24 +46,59 @@ void TcpClient::showConnect()
     QMessageBox::information(this,"连接服务器","SUCESS!!!");
 }
 
-void TcpClient::on_send_clicked()
-{
-    QString strMsg = ui->linetext->text();
-       if(!strMsg.isEmpty())
-       {
-           PDU *pdu = mkPDU(strMsg.size());
-           pdu->uiMsgType = 8888;
-           memcpy(pdu->caMsg,strMsg.toStdString().c_str(),strMsg.size());
-           m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
-           qDebug() << "111";
-           free(pdu);
-           pdu = NULL;
-       }
-       else
-       {
-           QMessageBox::warning(this,"信息发送","发送的信息不能为空");
-       }
+//void TcpClient::on_send_clicked()
+//{
+//    QString strMsg = ui->linetext->text();
+//       if(!strMsg.isEmpty())
+//       {
+//           PDU *pdu = mkPDU(strMsg.size());
+//           pdu->uiMsgType = 8888;
+//           memcpy(pdu->caMsg,strMsg.toStdString().c_str(),strMsg.size());
+//           m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+//           qDebug() << "111";
+//           free(pdu);
+//           pdu = NULL;
+//       }
+//       else
+//       {
+//           QMessageBox::warning(this,"信息发送","发送的信息不能为空");
+//       }
+//}
 
+
+void TcpClient::on_login_pb_clicked()
+{
+
+}
+
+
+void TcpClient::on_regist_pb_clicked()
+{
+    //获取username文本信息
+    QString username=ui->username->text();
+    //获取passwo文本信息
+    QString password=ui->password->text();
+    qDebug() << username <<password;
+    if(!username.isEmpty()&&!password.isEmpty())
+    {
+        PDU *pdu=mkPDU(0);
+        pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_REQUEST;
+        strncpy(pdu->caData,username.toStdString().c_str(),32);
+        strncpy(pdu->caData+32,password.toStdString().c_str(),32);
+       // pdu->uiMsgLen=sizeof(uint)+pdu->caData.s
+        //向服务器端发送用户信息
+        m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+
+    }
+    else
+    {
+        QMessageBox::warning(this,"提示","用户名密码不为空！");
+    }
+}
+
+
+void TcpClient::on_cancel_pb_clicked()
+{
 
 }
 
