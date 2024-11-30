@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QHostAddress>
-
+#include <mytcpserver.h>
 TcpServer::TcpServer(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpServer)
 {
     ui->setupUi(this);
@@ -18,7 +18,7 @@ TcpServer::~TcpServer()
 
 void TcpServer::loadConfig()
 {
-    QTcpServer *mTcpServer = new QTcpServer(this);//服务器对象
+    MyTcpServer *mTcpServer = new MyTcpServer();//服务器对象
     QHostAddress mHostAddress;//本地IP地址
     quint16 _port;
     QFile file(":/server.config");

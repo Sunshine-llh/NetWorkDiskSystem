@@ -2,7 +2,7 @@
 #include <QDebug>
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
-   connect(this,SIGNAL(readyRead()),this,SLOT(recvMsg()));
+   connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
 }
  void MyTcpSocket::remsg()
 {
