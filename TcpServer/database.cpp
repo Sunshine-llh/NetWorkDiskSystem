@@ -20,13 +20,24 @@ void Database::initdatabase(){
     //获取查询函数
     if(db.open()){
         qDebug()<< "数据库连接成功！";
-        //QSqlQuery query;
-//        query.exec("select * from usrInfo");
-//        while (query.next()) {
-//            //QString data=query.value(1));
-//             qDebug() << query.ValuesAsRows;
-//        }
     }
+    else
+    {
+        QMessageBox::critical(NULL,"连接","连接数据库失败！");
+    }
+}
+bool regist(const char *username,const char *password)
+{
+
+    if(NULL==username && NULL==password)
+    {
+        return false;
+    }
+    QSqlQuery query;
+    QString sql=QString("insert into usrInfo (name,pwd) values(\'%1\',\'%2\')").arg(username).arg(password);
+    return query.exec(sql);
+
+
 }
 //重写析构函数
 Database::~Database()
@@ -34,3 +45,4 @@ Database::~Database()
     //关闭数据库
     db.close();
 }
+

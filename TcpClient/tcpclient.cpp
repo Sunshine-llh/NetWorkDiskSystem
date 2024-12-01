@@ -81,7 +81,7 @@ void TcpClient::show_information()
 
     case ENUM_MSG_TYPE_REGIST_RESPOND :
     {
-        QMessageBox::information(this,"注册",REGIST_OK);
+        QMessageBox::information(this,"注册",pdu->caData);
     }
     default:
     {

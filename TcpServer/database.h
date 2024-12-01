@@ -13,7 +13,9 @@ public:
     explicit Database(QObject *parent = nullptr);
     static Database& getInstance();
     void initdatabase();
+    bool regist(const char* username,const char* password);
     ~Database();
+
 signals:
 private:
     QSqlDatabase db;
