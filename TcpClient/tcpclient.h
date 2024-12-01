@@ -27,6 +27,8 @@ private slots:
     void on_regist_pb_clicked();
 
     void on_cancel_pb_clicked();
+    //定义处理监听服务器反馈信息的函数
+    void show_information();
 
 private:
     Ui::TcpClient *ui;

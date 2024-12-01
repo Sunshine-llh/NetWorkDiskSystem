@@ -12,6 +12,8 @@ TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClien
     loadConfig();
     //连接服务器
     connect(&m_tcpScoket,SIGNAL(connected()),this,SLOT(showConnect()));
+    //监听服务器
+    connect(&m_tcpScoket,&QTcpSocket::readyRead,this,&TcpClient::show_information);
     m_tcpScoket.connectToHost(QHostAddress(m_strIP),m_usPort);
 }
 
@@ -65,10 +67,30 @@ void TcpClient::showConnect()
 //       }
 //}
 
+void TcpClient::show_information()
+{
+   //获取服务器端响应的数据
+    uint uiPDULen=0;
+    m_tcpScoket.read((char*)&uiPDULen,sizeof(uint));
+    uint uiMsgLen = uiPDULen - sizeof(PDU);
+    PDU *pdu = mkPDU(uiMsgLen);
+    m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
+    qDebug() <<pdu->uiMsgType;
+    //判断返回的类型
+    switch (pdu->uiMsgType) {
 
+    case ENUM_MSG_TYPE_REGIST_RESPOND :
+    {
+        QMessageBox::information(this,"注册",REGIST_OK);
+    }
+    default:
+    {
+        break;
+    }
+}
+}
 void TcpClient::on_login_pb_clicked()
 {
-
 }
 
 
@@ -86,6 +108,7 @@ void TcpClient::on_regist_pb_clicked()
         strncpy(pdu->caData,username.toStdString().c_str(),32);
         strncpy(pdu->caData+32,password.toStdString().c_str(),32);
        // pdu->uiMsgLen=sizeof(uint)+pdu->caData.s
+        qDebug() << pdu->uiPDULen;
         //向服务器端发送用户信息
         m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
 
@@ -101,4 +124,3 @@ void TcpClient::on_cancel_pb_clicked()
 {
 
 }
-
