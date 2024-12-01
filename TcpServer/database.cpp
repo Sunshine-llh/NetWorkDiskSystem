@@ -19,13 +19,13 @@ void Database::initdatabase(){
     model->select();
     //获取查询函数
     if(db.open()){
-        qDebug()<< "查询成功！";
-        QSqlQuery query;
-        query.exec("select * from usrInfo");
-        while (query.next()) {
-            //QString data=query.value(1));
-             qDebug() << query.ValuesAsRows;
-        }
+        qDebug()<< "数据库连接成功！";
+        //QSqlQuery query;
+//        query.exec("select * from usrInfo");
+//        while (query.next()) {
+//            //QString data=query.value(1));
+//             qDebug() << query.ValuesAsRows;
+//        }
     }
 }
 //重写析构函数

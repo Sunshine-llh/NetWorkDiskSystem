@@ -75,7 +75,7 @@ void TcpClient::show_information()
     uint uiMsgLen = uiPDULen - sizeof(PDU);
     PDU *pdu = mkPDU(uiMsgLen);
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
-    qDebug() <<pdu->uiMsgType;
+    qDebug() << pdu->uiMsgType;
     //判断返回的类型
     switch (pdu->uiMsgType) {
 
@@ -87,6 +87,8 @@ void TcpClient::show_information()
     {
         break;
     }
+
+
 }
 }
 void TcpClient::on_login_pb_clicked()
