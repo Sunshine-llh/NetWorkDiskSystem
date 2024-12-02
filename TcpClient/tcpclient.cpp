@@ -66,22 +66,33 @@ void TcpClient::showConnect()
 //           QMessageBox::warning(this,"信息发送","发送的信息不能为空");
 //       }
 //}
-
+//用于接受服务器的的响应函数
 void TcpClient::show_information()
 {
-   //获取服务器端响应的数据
+    //获取服务器端响应的数据
     uint uiPDULen=0;
     m_tcpScoket.read((char*)&uiPDULen,sizeof(uint));
     uint uiMsgLen = uiPDULen - sizeof(PDU);
     PDU *pdu = mkPDU(uiMsgLen);
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
     qDebug() << pdu->uiMsgType;
+    qDebug() << pdu->caData;
     //判断返回的类型
     switch (pdu->uiMsgType) {
 
     case ENUM_MSG_TYPE_REGIST_RESPOND :
     {
-        QMessageBox::information(this,"注册",pdu->caData);
+        if(pdu->uiMsgType==1)
+            QMessageBox::information(this,"注册",pdu->caData);
+        else
+            QMessageBox::information(this,"注册",pdu->caData);
+    }
+    case ENUM_MSG_TYPE_LOGIN_RESPOND  :
+    {
+        if(pdu->uiMsgType==3)
+            QMessageBox::information(this,"登录",pdu->caData);
+        else
+            QMessageBox::information(this,"登录",pdu->caData);
     }
     default:
     {
@@ -89,13 +100,29 @@ void TcpClient::show_information()
     }
 
 
+    }
 }
-}
+//登录按钮
 void TcpClient::on_login_pb_clicked()
 {
+    //客户端提交登录信息
+    //获取username文本信息
+    QString username=ui->username->text();
+    //获取passwo文本信息
+    QString password=ui->password->text();
+    if(username==NULL || password==NULL)
+    {
+        QMessageBox::warning(this,"提示","用户名密码不为空！");
+    }
+    PDU *pdu=mkPDU(0);
+    pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_REQUEST;
+    strncpy(pdu->caData,username.toStdString().c_str(),32);
+    strncpy(pdu->caData+32,password.toStdString().c_str(),32);
+    m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+
 }
 
-
+//注册按钮
 void TcpClient::on_regist_pb_clicked()
 {
     //获取username文本信息
@@ -109,7 +136,7 @@ void TcpClient::on_regist_pb_clicked()
         pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_REQUEST;
         strncpy(pdu->caData,username.toStdString().c_str(),32);
         strncpy(pdu->caData+32,password.toStdString().c_str(),32);
-       // pdu->uiMsgLen=sizeof(uint)+pdu->caData.s
+        // pdu->uiMsgLen=sizeof(uint)+pdu->caData.s
         qDebug() << pdu->uiPDULen;
         //向服务器端发送用户信息
         m_tcpScoket.write((char*)pdu,pdu->uiPDULen);

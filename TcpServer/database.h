@@ -14,6 +14,7 @@ public:
     static Database& getInstance();
     void initdatabase();
     bool regist(const char* username,const char* password);
+    bool login(const char* username,const char* password);
     ~Database();
 
 signals:

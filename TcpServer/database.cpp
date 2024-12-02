@@ -26,6 +26,7 @@ void Database::initdatabase(){
         QMessageBox::critical(NULL,"连接","连接数据库失败！");
     }
 }
+//注册
 bool Database::regist(const char *username,const char *password)
 {
 
@@ -35,8 +36,30 @@ bool Database::regist(const char *username,const char *password)
     }
     QSqlQuery query;
     QString sql=QString("insert into usrInfo (name,pwd) values(\'%1\',\'%2\')").arg(username).arg(password);
+    //qDebug() << query.exec(sql);
     return query.exec(sql);
 
+}
+//登录
+bool Database::login(const char* username,const char* password)
+{
+    if(NULL==username && NULL==password)
+    {
+        return false;
+    }
+    QSqlQuery query;
+    QString sql=QString("select * from usrInfo where name=\'%1\' and pwd=\'%2\' and online =0").arg(username).arg(password);
+    query.exec(sql);
+    qDebug() << "-------login_test------";
+    if(query.next())
+    {
+        sql=QString("insert into usrInfo online=1 where name=\'%1\' and pwd=\'%2\'").arg(username).arg(password);
+        query.exec(sql);
+        return true;
+    }
+    else {
+        return false;
+    }
 
 }
 //重写析构函数
