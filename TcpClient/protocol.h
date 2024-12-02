@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
-typedef unsigned int uint;
-
 // 消息回复类型
 #define REGIST_OK "regist ok"
 #define REGIST_FAILED "regist failed : name existed"
@@ -34,6 +31,7 @@ typedef unsigned int uint;
 #define MOVE_FILE_OK "move file ok"
 #define MOVE_FILE_FAILURED "move file failured:is reguler file"
 #define COMMON_ERR "operate failed: system is busy"
+typedef unsigned int uint;
 // 消息类型枚举
 enum ENUM_MSG_TYPE
 {
