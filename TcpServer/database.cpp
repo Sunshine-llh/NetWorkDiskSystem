@@ -26,7 +26,7 @@ void Database::initdatabase(){
         QMessageBox::critical(NULL,"连接","连接数据库失败！");
     }
 }
-bool regist(const char *username,const char *password)
+bool Database::regist(const char *username,const char *password)
 {
 
     if(NULL==username && NULL==password)
