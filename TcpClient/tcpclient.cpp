@@ -145,6 +145,7 @@ void TcpClient::on_regist_pb_clicked()
     else
     {
         QMessageBox::warning(this,"提示","用户名密码不为空！");
+        return;
     }
 }
 
