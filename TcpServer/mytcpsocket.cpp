@@ -36,6 +36,7 @@ void MyTcpSocket::remsg()
         {
             //free(pdu);
             pdu = mkPDU(0);
+            qDebug() << "test";
             pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_RESPOND;
             strcpy(pdu->caData,REGIST_FAILED);
         }
