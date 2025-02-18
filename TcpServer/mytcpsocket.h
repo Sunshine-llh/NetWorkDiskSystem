@@ -6,6 +6,8 @@
 #include <database.h>
 class MyTcpSocket : public QTcpSocket
 {
+private:
+    QString login_name;
 public:
     explicit MyTcpSocket(QObject *parent = nullptr);
 public slots:

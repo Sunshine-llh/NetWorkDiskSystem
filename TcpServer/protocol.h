@@ -8,6 +8,8 @@
 #define REGIST_FAILED "regist failed : name existed"
 #define LOGIN_OK "login ok"
 #define LOGIN_FAILED "login failed : name error or pwd error or relogin"
+#define OFF_LINE_OK "off line"
+#define OFF_LINE_FAILED "Currently no login available"
 #define SEARCH_USR_NO "no such people"
 #define SEARCH_USR_ONLINE "online"
 #define SEARCH_USR_OFFLINE "offline"
@@ -40,6 +42,8 @@ enum ENUM_MSG_TYPE
     ENUM_MSG_TYPE_REGIST_RESPOND,           // 注册回复
     ENUM_MSG_TYPE_LOGIN_REQUEST,            // 登录请求
     ENUM_MSG_TYPE_LOGIN_RESPOND,            // 登录回复
+    ENUM_MSG_TYPE_OFFLINE_REQUEST,          //下线请求
+    ENUM_MSG_TYPE_OFFLINE_RESPOND,          //下线请求回复
     ENUM_MSG_TYPE_ALL_ONLINE_REQUEST,       // 在线用户请求
     ENUM_MSG_TYPE_ALL_ONLINE_RESPOND,       // 在线用户回复
     ENUM_MSG_TYPE_SEARCH_USR_REQUEST,       // 搜索用户请求

@@ -94,6 +94,13 @@ void TcpClient::show_information()
         else
             QMessageBox::information(this,"登录",pdu->caData);
     }
+    case ENUM_MSG_TYPE_OFFLINE_RESPOND  :
+    {
+        if(pdu->uiMsgType==5)
+            QMessageBox::information(this,"登录",pdu->caData);
+        else
+            QMessageBox::information(this,"登录",pdu->caData);
+    }
     default:
     {
         break;
@@ -149,8 +156,11 @@ void TcpClient::on_regist_pb_clicked()
     }
 }
 
-
+//注销按钮
 void TcpClient::on_cancel_pb_clicked()
 {
-
+    PDU *pdu=mkPDU(0);
+    pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_REQUEST;
+    //向服务器端发送用户信息
+    m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
 }
