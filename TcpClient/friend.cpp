@@ -1,5 +1,5 @@
 #include "friend.h"
-
+#include <QDebug>
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -12,20 +12,24 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     m_pSearchUsrPB = new QPushButton("查找用户");
     m_pMsgSendPB = new QPushButton("信息发送");
     m_pPrivateChatPB = new QPushButton("私聊");
+
     QVBoxLayout *pRightPBVBL = new QVBoxLayout;
     pRightPBVBL->addWidget(m_pDelFriendPB);
     pRightPBVBL->addWidget(m_pFlushFriendPB);
     pRightPBVBL->addWidget(m_pShowOnlineUsrPB);
     pRightPBVBL->addWidget(m_pSearchUsrPB);
     pRightPBVBL->addWidget(m_pPrivateChatPB);
+
     QHBoxLayout *pTopHBL = new QHBoxLayout;
     pTopHBL->addWidget(m_pShowMsgTE);
     pTopHBL->addWidget(m_pFriendListWidget);
     pTopHBL->addLayout(pRightPBVBL);
+
     QHBoxLayout *pMsgHBL = new QHBoxLayout;
     pMsgHBL->addWidget(m_pInputMsgLE);
     pMsgHBL->addWidget(m_pMsgSendPB);
     m_pOnline = new Online;
+
     QVBoxLayout *pMain = new QVBoxLayout;
     pMain->addLayout(pTopHBL);
     pMain->addLayout(pMsgHBL);
@@ -46,4 +50,7 @@ void Friend::showOnline()
     {
         m_pOnline->hide();
     }
+    qDebug() << "test";
+//    Online w;
+//    w.show();
 }

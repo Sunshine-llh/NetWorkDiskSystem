@@ -16,25 +16,30 @@
   <widget class="QListWidget" name="online_lw">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>1</y>
-     <width>301</width>
-     <height>301</height>
+     <x>10</x>
+     <y>20</y>
+     <width>291</width>
+     <height>261</height>
     </rect>
    </property>
+   <item>
+    <property name="text">
+     <string>fdsa</string>
+    </property>
+   </item>
   </widget>
   <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
      <x>310</x>
-     <y>6</y>
+     <y>16</y>
      <width>77</width>
-     <height>291</height>
+     <height>271</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <spacer name="verticalSpacer">
+     <spacer name="verticalSpacer_2">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
@@ -54,7 +59,7 @@
      </widget>
     </item>
     <item>
-     <spacer name="verticalSpacer_2">
+     <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
