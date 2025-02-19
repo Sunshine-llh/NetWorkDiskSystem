@@ -43,30 +43,26 @@ void TcpClient::loadConfig()
         QMessageBox::critical(this,"open config","open config failed");
     }
 }
+
+//返回实例对象TcpClient
+TcpClient &TcpClient::getInstance()
+{
+    static TcpClient instance;
+    return instance;
+}
+
+//返回tcp_socket对象
+QTcpSocket &TcpClient:: getTcpSocket()
+{
+    return m_tcpScoket;
+}
+
 //获取服务器结果
 void TcpClient::showConnect()
 {
     QMessageBox::information(this,"连接服务器","SUCESS!!!");
 }
 
-//void TcpClient::on_send_clicked()
-//{
-//    QString strMsg = ui->linetext->text();
-//       if(!strMsg.isEmpty())
-//       {
-//           PDU *pdu = mkPDU(strMsg.size());
-//           pdu->uiMsgType = 8888;
-//           memcpy(pdu->caMsg,strMsg.toStdString().c_str(),strMsg.size());
-//           m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
-//           qDebug() << "111";
-//           free(pdu);
-//           pdu = NULL;
-//       }
-//       else
-//       {
-//           QMessageBox::warning(this,"信息发送","发送的信息不能为空");
-//       }
-//}
 //用于接受服务器的的响应函数
 void TcpClient::show_information()
 {

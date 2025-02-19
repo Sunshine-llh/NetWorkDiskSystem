@@ -16,6 +16,8 @@ class TcpClient : public QMainWindow
 public:
     TcpClient(QWidget *parent = nullptr);
     ~TcpClient();
+    static TcpClient &getInstance();
+    QTcpSocket &getTcpSocket();
     void loadConfig();
 public slots:
     void showConnect();
