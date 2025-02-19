@@ -9,15 +9,22 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    friend.cpp \
     main.cpp \
+    online.cpp \
+    opewidget.cpp \
     protocol.cpp \
     tcpclient.cpp
 
 HEADERS += \
+    friend.h \
+    online.h \
+    opewidget.h \
     protocol.h \
     tcpclient.h
 
 FORMS += \
+    online.ui \
     tcpclient.ui
 
 # Default rules for deployment.
