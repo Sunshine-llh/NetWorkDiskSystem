@@ -12,4 +12,3 @@ Online::~Online()
 {
     delete ui;
 }
-

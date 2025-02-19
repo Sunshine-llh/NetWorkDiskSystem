@@ -6,6 +6,7 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <string.h>
+#include <opewidget.h>
 TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
@@ -89,17 +90,25 @@ void TcpClient::show_information()
     }
     case ENUM_MSG_TYPE_LOGIN_RESPOND  :
     {
+        OpeWidget w_pOpeWidget;
         if(pdu->uiMsgType==3)
+        {
             QMessageBox::information(this,"登录",pdu->caData);
+        }
         else
+        {
             QMessageBox::information(this,"登录",pdu->caData);
+            OpeWidget::getInstance().show();
+            this->hide();
+        }
+
     }
     case ENUM_MSG_TYPE_OFFLINE_RESPOND  :
     {
         if(pdu->uiMsgType==5)
-            QMessageBox::information(this,"登录",pdu->caData);
+            QMessageBox::information(this,"退出",pdu->caData);
         else
-            QMessageBox::information(this,"登录",pdu->caData);
+            QMessageBox::information(this,"退出",pdu->caData);
     }
     default:
     {
