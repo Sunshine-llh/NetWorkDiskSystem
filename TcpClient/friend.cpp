@@ -68,10 +68,10 @@ void Friend::showOnline()
 void Friend::showFriend()
 {
     qDebug() << "showFriend";
+    PDU *pdu = mkPDU(0);
     if(m_pOnline->isHidden())
     {
        //向服务端发送请求
-       PDU *pdu = mkPDU(0);
        pdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_REQUEST;
        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
        free(pdu);
@@ -80,7 +80,9 @@ void Friend::showFriend()
     }
     else
     {
-        m_pOnline->hide();
+        free(pdu);
+//        m_pOnline->hide();
+        m_pOnline->close();
     }
 }
 
@@ -90,4 +92,5 @@ void Friend::showAllOnlineUsr(PDU *pdu)
     if(pdu ==  NULL)
         return;
     m_pOnline->show_Online_Usr(pdu);
+
 }

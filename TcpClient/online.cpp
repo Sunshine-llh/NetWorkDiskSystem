@@ -27,4 +27,5 @@ void Online::show_Online_Usr(PDU *pdu)
         qDebug() << name;
         ui->online_lw->addItem(name);
     }
+   free(pdu);
 }
