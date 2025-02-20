@@ -2,6 +2,7 @@
 #include <qdebug.h>
 #include "protocol.h"
 #include "tcpclient.h"
+
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -14,6 +15,7 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     m_pSearchUsrPB = new QPushButton("查找用户");
     m_pMsgSendPB = new QPushButton("信息发送");
     m_pPrivateChatPB = new QPushButton("私聊");
+
     QVBoxLayout *pRightPBVBL = new QVBoxLayout;
     pRightPBVBL->addWidget(m_pDelFriendPB);
     pRightPBVBL->addWidget(m_pFlushFriendPB);
@@ -38,12 +40,13 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     m_pOnline->hide();
     setLayout(pMain);
     connect(m_pShowOnlineUsrPB,SIGNAL(clicked(bool)),this,SLOT(showOnline()));
+    connect(m_pSearchUsrPB,SIGNAL(clicked(bool)),this,SLOT(showFriend()));
 }
 
 // 在线用户请求
 void Friend::showOnline()
 {
-    qDebug() << "test";
+    qDebug() << "showOnline";
     if(m_pOnline->isHidden())
     {
        //向服务端发送请求
@@ -60,6 +63,27 @@ void Friend::showOnline()
     }
 
 }
+
+//搜索用户请求
+void Friend::showFriend()
+{
+    qDebug() << "showFriend";
+    if(m_pOnline->isHidden())
+    {
+       //向服务端发送请求
+       PDU *pdu = mkPDU(0);
+       pdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_REQUEST;
+       TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+       free(pdu);
+       pdu = NULL;
+       m_pOnline->show();
+    }
+    else
+    {
+        m_pOnline->hide();
+    }
+}
+
 //展示服务器发送过来的在线用户
 void Friend::showAllOnlineUsr(PDU *pdu)
 {

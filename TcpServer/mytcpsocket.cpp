@@ -134,6 +134,11 @@ void MyTcpSocket::remsg()
         rspdu = NULL;
         break;
     }
+    //搜索用户请求
+    case ENUM_MSG_TYPE_SEARCH_USR_REQUEST:
+    {
+            qDebug() << "搜索用户请求";
+    }
 
     default: break;
 

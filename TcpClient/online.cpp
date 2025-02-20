@@ -24,6 +24,7 @@ void Online::show_Online_Usr(PDU *pdu)
     for(int i=0;i<name_num;i++)
     {
         memcpy((char*)name, (char *)pdu->caMsg + i*32,32);
+        qDebug() << name;
         ui->online_lw->addItem(name);
     }
 }
