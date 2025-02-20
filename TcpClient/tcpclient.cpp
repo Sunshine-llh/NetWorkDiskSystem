@@ -115,7 +115,7 @@ void TcpClient::show_information()
     case ENUM_MSG_TYPE_ALL_ONLINE_RESPOND :
     {
         qDebug() << "showAllOnlineUsr";
-        qDebug()<< pdu->caMsg[32];
+        qDebug()<< pdu->caMsg;
         OpeWidget::getInstance().get_Friend()->showAllOnlineUsr(pdu);
 
         break;

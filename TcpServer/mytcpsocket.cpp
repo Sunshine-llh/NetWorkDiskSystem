@@ -119,18 +119,19 @@ void MyTcpSocket::remsg()
 
         //定义Msg长度
         uint Msg_Len = results.size() * 32;
-        pdu = mkPDU(Msg_Len);
-        pdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
+        PDU *rspdu = mkPDU(Msg_Len);
+        rspdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
         //strcpy(pdu->caData, SEARCH_USR_ONLINE);
         for(int i=0;i<results.size();i++)
         {
-            memcpy((char *)pdu->caMsg + i*32,results.at(i).toStdString().c_str(),results.at(i).size());
+            memcpy((char *)rspdu->caMsg + i*32,results.at(i).toStdString().c_str(),results.at(i).size());
+            qDebug() << results.at(i);
         }
-        qDebug() << pdu->caMsg;
-        write((char*)pdu, pdu->uiPDULen);
-        qDebug() << pdu->caMsg;
-        free(pdu);
-        pdu = NULL;
+        qDebug() << rspdu->caMsg;
+        write((char*)rspdu, rspdu->uiPDULen);
+        qDebug() << rspdu->caMsg;
+        free(rspdu);
+        rspdu = NULL;
         break;
     }
 
