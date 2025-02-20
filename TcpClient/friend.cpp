@@ -1,5 +1,7 @@
 #include "friend.h"
 #include <qdebug.h>
+#include "protocol.h"
+#include "tcpclient.h"
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -38,17 +40,30 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     connect(m_pShowOnlineUsrPB,SIGNAL(clicked(bool)),this,SLOT(showOnline()));
 }
 
-// 显示在线用户窗口
+// 在线用户请求
 void Friend::showOnline()
 {
     qDebug() << "test";
     if(m_pOnline->isHidden())
     {
-        m_pOnline->show();
+       //向服务端发送请求
+       PDU *pdu = mkPDU(0);
+       pdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_REQUEST;
+       TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+       free(pdu);
+       pdu = NULL;
+       m_pOnline->show();
     }
     else
     {
         m_pOnline->hide();
     }
-     m_pOnline->show();
+
+}
+//展示服务器发送过来的在线用户
+void Friend::showAllOnlineUsr(PDU *pdu)
+{
+    if(pdu ==  NULL)
+        return;
+    m_pOnline->show_Online_Usr(pdu);
 }

@@ -16,6 +16,7 @@ public:
     bool regist(const char* username,const char* password);
     bool login(const char* username,const char* password);
     bool offline(QString username);
+    QStringList get_Online_friend();
     ~Database();
 
 signals:

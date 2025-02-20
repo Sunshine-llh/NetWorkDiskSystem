@@ -74,6 +74,7 @@ void TcpClient::show_information()
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
     qDebug() << pdu->uiMsgType;
     qDebug() << pdu->caData;
+
     //判断返回的类型
     switch (pdu->uiMsgType) {
 
@@ -83,10 +84,11 @@ void TcpClient::show_information()
             QMessageBox::information(this,"注册",pdu->caData);
         else
             QMessageBox::information(this,"注册",pdu->caData);
+        break;
     }
+
     case ENUM_MSG_TYPE_LOGIN_RESPOND  :
     {
-        OpeWidget w_pOpeWidget;
         if(pdu->uiMsgType==3)
         {
             QMessageBox::information(this,"登录",pdu->caData);
@@ -97,15 +99,28 @@ void TcpClient::show_information()
             OpeWidget::getInstance().show();
             this->hide();
         }
-
+        break;
     }
+
     case ENUM_MSG_TYPE_OFFLINE_RESPOND  :
     {
         if(pdu->uiMsgType==5)
             QMessageBox::information(this,"退出",pdu->caData);
         else
             QMessageBox::information(this,"退出",pdu->caData);
+        break;
     }
+
+    //接收服务器返回的在线好友
+    case ENUM_MSG_TYPE_ALL_ONLINE_RESPOND :
+    {
+        qDebug() << "showAllOnlineUsr";
+        qDebug()<< pdu->caMsg[32];
+        OpeWidget::getInstance().get_Friend()->showAllOnlineUsr(pdu);
+
+        break;
+    }
+
     default:
     {
         break;

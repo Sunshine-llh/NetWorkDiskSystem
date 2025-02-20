@@ -89,6 +89,25 @@ bool Database:: offline(QString username)
         return true;
     }
 }
+
+//查询在线好友(得到name)
+QStringList Database:: get_Online_friend()
+{
+    QStringList results;
+    QSqlQuery query;
+    QString sql = QString("select * from usrInfo where online=1");
+    query.exec(sql);
+
+    QString name;
+    while(query.next())
+    {
+        name = query.value(1).toString();
+        results.append(name);
+    }
+    qDebug() << results;
+    return results;
+}
+
 //重写析构函数
 Database::~Database()
 {

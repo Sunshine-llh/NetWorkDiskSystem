@@ -106,6 +106,34 @@ void MyTcpSocket::remsg()
         break;
     }
 
+    //在线查询好友请求
+    case ENUM_MSG_TYPE_ALL_ONLINE_REQUEST:
+    {
+
+        QStringList results = Database:: getInstance().get_Online_friend();
+        if(results.isEmpty())
+        {
+            return;
+        }
+        free(pdu);
+
+        //定义Msg长度
+        uint Msg_Len = results.size() * 32;
+        pdu = mkPDU(Msg_Len);
+        pdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
+        //strcpy(pdu->caData, SEARCH_USR_ONLINE);
+        for(int i=0;i<results.size();i++)
+        {
+            memcpy((char *)pdu->caMsg + i*32,results.at(i).toStdString().c_str(),results.at(i).size());
+        }
+        qDebug() << pdu->caMsg;
+        write((char*)pdu, pdu->uiPDULen);
+        qDebug() << pdu->caMsg;
+        free(pdu);
+        pdu = NULL;
+        break;
+    }
+
     default: break;
 
     }
