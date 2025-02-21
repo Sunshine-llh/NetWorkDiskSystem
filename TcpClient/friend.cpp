@@ -68,8 +68,8 @@ void Friend::showOnline()
 //搜索用户请求
 void Friend::showFriend()
 {
+
     Search_name = QInputDialog::getText(this, "好友搜索", "用户名");
-    qDebug() << "showFriend";
 
     if(!Search_name.isEmpty())
     {
@@ -80,8 +80,6 @@ void Friend::showFriend()
         free(pdu);
         pdu = NULL;
     }
-    else
-        QMessageBox::information(this,"好友搜索", "用户名不能为空");
 
 }
 

@@ -58,22 +58,20 @@ void MyTcpSocket::remsg()
     {
         //向客户端响应
         bool rs=Database::getInstance().login(caName,caPwd);
+        free(pdu);
+        pdu = mkPDU(0);
         if(rs)
         {
-            free(pdu);
-            pdu = mkPDU(0);
             pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_RESPOND;
             login_name=caName;
             strcpy(pdu->caData,LOGIN_OK);
-
         }
         else
         {
-            free(pdu);
-            pdu = mkPDU(0);
             pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_RESPOND;
             strcpy(pdu->caData,LOGIN_FAILED);
         }
+
         write((char *)pdu,pdu->uiPDULen);
         free(pdu);
         pdu=NULL;
@@ -110,6 +108,7 @@ void MyTcpSocket::remsg()
     //在线查询好友请求
     case ENUM_MSG_TYPE_ALL_ONLINE_REQUEST:
     {
+        qDebug() << "在线查询好友请求";
         results = Database:: getInstance().get_Online_friend();
         if(results.isEmpty())
         {
@@ -117,7 +116,6 @@ void MyTcpSocket::remsg()
         }
         free(pdu);
 
-        //定义Msg长度
         uint Msg_Len = results.size() * 32;
         PDU *rspdu = mkPDU(Msg_Len);
         rspdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
@@ -129,8 +127,6 @@ void MyTcpSocket::remsg()
         }
 
         write((char*)rspdu, rspdu->uiPDULen);
-
-        qDebug() << "在线查询好友请求";
         free(rspdu);
         rspdu = NULL;
         break;
@@ -139,27 +135,38 @@ void MyTcpSocket::remsg()
     //搜索用户请求
     case ENUM_MSG_TYPE_SEARCH_USR_REQUEST:
     {
+
         qDebug() << "搜索用户请求";
         char search_name[32] = {'\0'};
         strncpy((char*)search_name, pdu->caData, 32);
         results = Database::getInstance().Search_friend(search_name);
 
+        qDebug() << results;
         if(results.isEmpty())
         {
+            PDU *rspdu = mkPDU(0);
+            rspdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_RESPOND;
+            strcpy(rspdu->caData,SEARCH_USR_NO);
+            write((char*)rspdu, rspdu->uiPDULen);
             return;
         }
+
         free(pdu);
         //定义Msg长度
         uint Msg_Len = results.size() * 32;
 
-        PDU *pdu = mkPDU(Msg_Len);
-        pdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_RESPOND;
-        memcpy((char*)pdu->caMsg, results.at(0).toStdString().c_str(), 32);
-        memcpy((char*)pdu->caMsg + 32, results.at(1).toStdString().c_str(), 32);
+        PDU *rspdu = mkPDU(Msg_Len);
+        rspdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_RESPOND;
+        memcpy((char*)rspdu->caData,results.at(1).toStdString().c_str(), 32);
 
-        write((char*)pdu, pdu->uiPDULen);
-        free(pdu);
+        memcpy((char*)rspdu->caMsg, results.at(0).toStdString().c_str(), 32);
+        memcpy((char*)rspdu->caMsg + 32, results.at(1).toStdString().c_str(), 32);
+
+        qDebug() << rspdu->caMsg;
+        write((char*)rspdu, rspdu->uiPDULen);
+        free(rspdu);
         pdu = NULL;
+
         break;
     }
 

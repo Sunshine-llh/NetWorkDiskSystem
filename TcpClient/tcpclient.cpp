@@ -73,7 +73,7 @@ void TcpClient::show_information()
     PDU *pdu = mkPDU(uiMsgLen);
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
     qDebug() << pdu->uiMsgType;
-    qDebug() << pdu->caData;
+    qDebug() << pdu->caData << "test---";
 
     //判断返回的类型
     switch (pdu->uiMsgType) {
@@ -89,7 +89,7 @@ void TcpClient::show_information()
 
     case ENUM_MSG_TYPE_LOGIN_RESPOND  :
     {
-        if(pdu->uiMsgType==3)
+        if(strcmp(pdu->caData,LOGIN_FAILED) == 0)
         {
             QMessageBox::information(this,"登录",pdu->caData);
         }
@@ -117,6 +117,28 @@ void TcpClient::show_information()
         qDebug() << "showAllOnlineUsr";
         qDebug()<< pdu->caMsg;
         OpeWidget::getInstance().get_Friend()->showAllOnlineUsr(pdu);
+
+        break;
+    }
+
+    //接受服务器返回的用户指定查询好友
+     case ENUM_MSG_TYPE_SEARCH_USR_RESPOND:
+    {
+
+        qDebug() << "接受服务器返回的用户指定查询好友";
+        char name[32];
+        char online_state[32];
+
+        if(strcmp(pdu->caData, SEARCH_USR_NO)==0)
+        {
+            QMessageBox::information(this, "搜索好友", QString("%1 : not exits").arg(OpeWidget::getInstance().get_Friend()->Search_name));
+        }
+        else
+        {
+            memcpy((char*)name, (char*)pdu->caMsg, 32);
+            memcpy((char*)online_state, (char*)pdu->caMsg + 32, 32);
+            QMessageBox::information(this, "搜索好友", QString("\'%1\' :\'%2\'").arg(OpeWidget::getInstance().get_Friend()->Search_name).arg(online_state));
+        }
 
         break;
     }

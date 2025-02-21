@@ -111,20 +111,22 @@ QStringList Database::Search_friend(QString name)
 {
     qDebug() << name;
     QStringList results;
-    QString online;
+    QString online_state=" ";
     QSqlQuery query;
     QString sql = QString("select * from usrInfo where name=\'%1\'").arg(name);
     query.exec(sql);
     if(query.next())
     {
         if(query.value(3)==1)
-            online = "在线";
-        else online = "离线";
+            online_state = "在线";
+
+        else online_state = "离线";
 
         results.append(name);
-        results.append(online);
+        results.append(online_state);
     }
-    qDebug() << results;
+
+    return results;
 }
 //重写析构函数
 Database::~Database()
