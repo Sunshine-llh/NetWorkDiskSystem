@@ -19,8 +19,8 @@ void Database::initdatabase(){
     //model->select();
     //获取查询函数
     if(db.open()){
-        qDebug()<< "数据库连接成功！";
         QSqlQuery query;
+        qDebug()<< "数据库连接成功！";
                query.exec("select * from usrInfo");
                while(query.next())
                {
@@ -41,9 +41,8 @@ bool Database::regist(const char *username,const char *password)
     {
         return false;
     }
-
-    qDebug() << username << password;
     QSqlQuery query;
+    qDebug() << username << password;
     QString sql=QString("insert into usrInfo values(null,\'%1\',\'%2\',0)").arg(username).arg(password);
     qDebug() << sql;
     return query.exec(sql);
@@ -56,7 +55,6 @@ bool Database::login(const char* username,const char* password)
     {
         return false;
     }
-
     QSqlQuery query;
     QString sql=QString("select * from usrInfo where name=\'%1\' and pwd=\'%2\'").arg(username).arg(password);
     query.exec(sql);
@@ -82,8 +80,8 @@ bool Database:: offline(QString username)
         return false;
     else
     {
-        qDebug() << username;
         QSqlQuery query;
+        qDebug() << username;
         QString sql= QString("update usrInfo set online=0 where name=\'%1\' and online=1").arg(username);
         query.exec(sql);
         return true;
@@ -93,8 +91,8 @@ bool Database:: offline(QString username)
 //查询在线好友(得到name)
 QStringList Database:: get_Online_friend()
 {
-    QStringList results;
     QSqlQuery query;
+    QStringList results;
     QString sql = QString("select * from usrInfo where online=1");
     query.exec(sql);
 
@@ -108,6 +106,26 @@ QStringList Database:: get_Online_friend()
     return results;
 }
 
+//查询指定好友
+QStringList Database::Search_friend(QString name)
+{
+    qDebug() << name;
+    QStringList results;
+    QString online;
+    QSqlQuery query;
+    QString sql = QString("select * from usrInfo where name=\'%1\'").arg(name);
+    query.exec(sql);
+    if(query.next())
+    {
+        if(query.value(3)==1)
+            online = "在线";
+        else online = "离线";
+
+        results.append(name);
+        results.append(online);
+    }
+    qDebug() << results;
+}
 //重写析构函数
 Database::~Database()
 {

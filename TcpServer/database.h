@@ -17,6 +17,7 @@ public:
     bool login(const char* username,const char* password);
     bool offline(QString username);
     QStringList get_Online_friend();
+    QStringList Search_friend(QString name);
     ~Database();
 
 signals:

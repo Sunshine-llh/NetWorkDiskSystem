@@ -8,6 +8,7 @@ class MyTcpSocket : public QTcpSocket
 {
 private:
     QString login_name;
+    QStringList results;
 public:
     explicit MyTcpSocket(QObject *parent = nullptr);
 public slots:

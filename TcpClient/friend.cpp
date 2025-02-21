@@ -2,7 +2,8 @@
 #include <qdebug.h>
 #include "protocol.h"
 #include "tcpclient.h"
-
+#include <QInputDialog>
+#include <QMessageBox>
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -67,23 +68,21 @@ void Friend::showOnline()
 //搜索用户请求
 void Friend::showFriend()
 {
+    Search_name = QInputDialog::getText(this, "好友搜索", "用户名");
     qDebug() << "showFriend";
-    PDU *pdu = mkPDU(0);
-    if(m_pOnline->isHidden())
+
+    if(!Search_name.isEmpty())
     {
-       //向服务端发送请求
-       pdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_REQUEST;
-       TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
-       free(pdu);
-       pdu = NULL;
-       m_pOnline->show();
+        PDU *pdu =mkPDU(0);
+        pdu->uiMsgType = ENUM_MSG_TYPE_SEARCH_USR_REQUEST;
+        memcpy((char*)pdu->caData, Search_name.toStdString().c_str(),Search_name.size());
+        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
     }
     else
-    {
-        free(pdu);
-//        m_pOnline->hide();
-        m_pOnline->close();
-    }
+        QMessageBox::information(this,"好友搜索", "用户名不能为空");
+
 }
 
 //展示服务器发送过来的在线用户
