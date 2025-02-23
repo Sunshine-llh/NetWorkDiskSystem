@@ -11,8 +11,12 @@ private:
     QStringList results;
 public:
     explicit MyTcpSocket(QObject *parent = nullptr);
+    QString get_login_name();
 public slots:
     void remsg();
+    void disconnected();
+signals:
+    void offline(MyTcpSocket *mysocket);
 };
 
 #endif // MYTCPSOCKET_H

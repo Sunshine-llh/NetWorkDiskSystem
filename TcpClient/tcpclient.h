@@ -19,16 +19,18 @@ public:
     static TcpClient &getInstance();
     QTcpSocket &getTcpSocket();
     void loadConfig();
+    QString get_login_name();
+
 public slots:
     void showConnect();
+
 private slots:
-    //void on_send_clicked();
 
     void on_login_pb_clicked();
 
     void on_regist_pb_clicked();
 
-    void on_cancel_pb_clicked();
+    //void on_cancel_pb_clicked();
     //定义处理监听服务器反馈信息的函数
     void show_information();
 
@@ -38,5 +40,7 @@ private:
     quint16 m_usPort;
     //连接服务器
     QTcpSocket m_tcpScoket;
+    //用户登录名
+    QString login_name;
 };
 #endif // TCPCLIENT_H

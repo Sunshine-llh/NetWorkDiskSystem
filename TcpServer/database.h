@@ -15,9 +15,11 @@ public:
     void initdatabase();
     bool regist(const char* username,const char* password);
     bool login(const char* username,const char* password);
-    bool offline(QString username);
+    void update_online_state(QString username);
     QStringList get_Online_friend();
     QStringList Search_friend(QString name);
+    int add_friend(const char *friend_name, const char *login_name);
+    void handle_agree_friend(const char *friend_name, const char * login_name);
     ~Database();
 
 signals:

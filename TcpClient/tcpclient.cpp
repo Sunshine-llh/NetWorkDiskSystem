@@ -63,10 +63,17 @@ void TcpClient::showConnect()
     QMessageBox::information(this,"连接服务器","SUCESS!!!");
 }
 
+//保存用户登录名
+QString TcpClient:: get_login_name()
+{
+    return this->login_name;
+}
+
 //用于接受服务器的的响应函数
 void TcpClient::show_information()
 {
     //获取服务器端响应的数据
+    qDebug() << "客户端响应...";
     uint uiPDULen=0;
     m_tcpScoket.read((char*)&uiPDULen,sizeof(uint));
     uint uiMsgLen = uiPDULen - sizeof(PDU);
@@ -114,7 +121,7 @@ void TcpClient::show_information()
     //接收服务器返回的在线好友
     case ENUM_MSG_TYPE_ALL_ONLINE_RESPOND :
     {
-        qDebug() << "showAllOnlineUsr";
+        qDebug() << "接收服务器返回的在线好友...";
         qDebug()<< pdu->caMsg;
         OpeWidget::getInstance().get_Friend()->showAllOnlineUsr(pdu);
 
@@ -125,7 +132,7 @@ void TcpClient::show_information()
      case ENUM_MSG_TYPE_SEARCH_USR_RESPOND:
     {
 
-        qDebug() << "接受服务器返回的用户指定查询好友";
+        qDebug() << "接受服务器返回的用户指定查询好友...";
         char name[32];
         char online_state[32];
 
@@ -142,53 +149,106 @@ void TcpClient::show_information()
 
         break;
     }
-
-    default:
+    //回复好友添加请求
+    case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
     {
+        qDebug() << "收到好友添加请求";
+        char friend_name[32] = {'\0'};
+        strncpy(friend_name, pdu->caData+32, 32);
+
+        PDU *respdu =mkPDU(0);
+        memcpy(respdu->caData, pdu->caData, 64);
+        int res = QMessageBox::information(this, "好友添加回复", QString("\'%1\' want to add with you?").arg(friend_name));
+
+        if(res == QMessageBox::Yes)
+        {
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_AGGREE;
+        }
+        else
+        {
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REFUSE;
+        }
+
+        m_tcpScoket.write((char*)respdu, respdu->uiMsgLen);
+        free(respdu);
+        respdu =NULL;
         break;
     }
 
+    case ENUM_MSG_TYPE_ADD_FRIEND_RESPOND:
+    {
+        QMessageBox::information(this,"好友请求",pdu->caData);
+        break;
+    }
+
+    //接受服务器返回的添加好友请求
+      case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
+    {
+        qDebug() << "接受服务器返回的添加好友成功请求...";
+        char friend_name[32] = {'\0'};
+        strncpy(friend_name, pdu->caData + 32, 32);
+        QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'成功！").arg(friend_name));
+        break;
 
     }
+     case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
+    {
+       qDebug() << "接受服务器返回的添加好友失败请求...";
+       char friend_name[32] = {'\0'};
+       strncpy(friend_name, pdu->caData + 32, 32);
+       QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'失败！").arg(friend_name));
+       break;
+
+    }
+    default:
+    {
+        qDebug() << "default...";
+        pdu = NULL;
+        break;
+    }
+    }
 }
+
 //登录按钮
 void TcpClient::on_login_pb_clicked()
 {
-    //客户端提交登录信息
-    //获取username文本信息
+
+    //获取用户登录信息
     QString username=ui->username->text();
-    //获取passwo文本信息
     QString password=ui->password->text();
+
     if(username==NULL || password==NULL)
     {
         QMessageBox::warning(this,"提示","用户名密码不为空！");
     }
+
+    this->login_name = username;
+
     PDU *pdu=mkPDU(0);
     pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_REQUEST;
     strncpy(pdu->caData,username.toStdString().c_str(),32);
     strncpy(pdu->caData+32,password.toStdString().c_str(),32);
     m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
-
+    free(pdu);
+    pdu = NULL;
 }
 
 //注册按钮
 void TcpClient::on_regist_pb_clicked()
 {
-    //获取username文本信息
+    //获取用户登录信息
     QString username=ui->username->text();
-    //获取passwo文本信息
     QString password=ui->password->text();
-    qDebug() << username <<password;
+
     if(!username.isEmpty()&&!password.isEmpty())
     {
         PDU *pdu=mkPDU(0);
         pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_REQUEST;
         strncpy(pdu->caData,username.toStdString().c_str(),32);
         strncpy(pdu->caData+32,password.toStdString().c_str(),32);
-        // pdu->uiMsgLen=sizeof(uint)+pdu->caData.s
-        qDebug() << pdu->uiPDULen;
-        //向服务器端发送用户信息
         m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
 
     }
     else
@@ -199,10 +259,12 @@ void TcpClient::on_regist_pb_clicked()
 }
 
 //注销按钮
-void TcpClient::on_cancel_pb_clicked()
-{
-    PDU *pdu=mkPDU(0);
-    pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_REQUEST;
-    //向服务器端发送用户信息
-    m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
-}
+//void TcpClient::on_cancel_pb_clicked()
+//{
+//    PDU *pdu=mkPDU(0);
+//    pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_REQUEST;
+//    //向服务器端发送用户信息
+//    m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+//    free(pdu);
+//    pdu = NULL;
+//}

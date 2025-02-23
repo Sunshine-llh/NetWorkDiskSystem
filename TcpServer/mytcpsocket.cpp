@@ -1,14 +1,33 @@
 #include "mytcpsocket.h"
 #include <QDebug>
 #include "database.h"
+#include "mytcpserver.h"
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
     connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
+    connect(this,&QTcpSocket::disconnected,this,&MyTcpSocket::disconnected);
 }
+
+//用户返回请求用户的用户名
+QString MyTcpSocket::get_login_name()
+{
+    return this->login_name;
+}
+//断开连接函数
+void MyTcpSocket::disconnected()
+{
+    qDebug()<< login_name << "已断开连接...";
+    Database::getInstance().update_online_state(login_name);
+    emit offline(this);
+}
+void MyTcpSocket::offline(MyTcpSocket *mytcpsoket)
+{
+
+}
+
 // 接收来自客户端的消息
 void MyTcpSocket::remsg()
 {
-    //qDebug() << this->bytesAvailable();
     uint uiPDULen = 0;
     this->read((char*)&uiPDULen,sizeof(uint));
     qDebug() << uiPDULen;
@@ -81,28 +100,70 @@ void MyTcpSocket::remsg()
     //下线请求
     case ENUM_MSG_TYPE_OFFLINE_REQUEST:
     {
-        qDebug() << login_name;
-        bool rs = Database::getInstance().offline(login_name);
+//        qDebug() << login_name;
+//        Database::getInstance().offline(login_name);
 
-        if(rs)
+//        if(rs)
+//        {
+//            free(pdu);
+//            pdu = mkPDU(0);
+//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
+//            strcpy(pdu->caData,OFF_LINE_OK);
+//        }
+//        else
+//        {
+//            free(pdu);
+//            pdu = mkPDU(0);
+//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
+//            strcpy(pdu->caData,OFF_LINE_FAILED);
+//            login_name = "";
+//        }
+//        write((char *)pdu,pdu->uiPDULen);
+//        free(pdu);
+//        pdu=NULL;
+//        break;
+    }
+
+     //响应客户端添加好友请求
+     case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
+    {
+        qDebug() << "响应客户端添加好友请求...";
+        char client_name[32] = {'\0'};
+        char friend_name[32] = {'\0'};
+
+        strncpy(client_name, pdu->caData, 32);
+        strncpy(friend_name, pdu->caData+32, 32);
+        int res = Database::getInstance().add_friend(client_name, friend_name);
+
+        PDU *respdu = NULL;
+
+        if(res == -1)
         {
-            free(pdu);
-            pdu = mkPDU(0);
-            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-            strcpy(pdu->caData,OFF_LINE_OK);
+            PDU *respdu =mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
+            strcpy(respdu->caData, UNKNOW_ERROR);
+            write((char*)respdu, respdu->uiPDULen);
         }
-        else
+        else if(res == 0)
         {
-            free(pdu);
-            pdu = mkPDU(0);
-            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-            strcpy(pdu->caData,OFF_LINE_FAILED);
-            login_name = "";
+            PDU *respdu =mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
+            strcpy(respdu->caData, EXISTED_FRIEND);
+            write((char*)respdu, respdu->uiPDULen);
         }
-        write((char *)pdu,pdu->uiPDULen);
-        free(pdu);
-        pdu=NULL;
-        break;
+        else if(res == 1)
+        {
+            MyTcpServer::getInstance().resend(friend_name, pdu);
+        }
+        else {
+
+            PDU *respdu =mkPDU(0);
+            respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
+            strcpy(respdu->caData, ADD_FRIEND_OFFLINE);
+            write((char*)respdu, respdu->uiPDULen);
+        }
+        free(respdu);
+        respdu = NULL;
     }
 
     //在线查询好友请求
@@ -170,6 +231,29 @@ void MyTcpSocket::remsg()
         break;
     }
 
+    //好友添加请求
+    //1、同意
+     case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
+    {
+        char login_name[32] = {'\0'};
+        char friend_name[32] = {'\0'};
+
+        strncpy(login_name, pdu->caData, 32);
+        strncpy(friend_name, pdu->caData + 32, 32);
+        Database::getInstance().handle_agree_friend(login_name, friend_name);
+
+        MyTcpServer::getInstance().resend(login_name, pdu);
+        break;
+    }
+    //2、拒绝
+    case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
+    {
+        char login_name[32] = {'\0'};
+        strncpy(login_name, pdu->caData, 32);
+
+        MyTcpServer::getInstance().resend(login_name, pdu);
+        break;
+    }
     default: break;
 
     }

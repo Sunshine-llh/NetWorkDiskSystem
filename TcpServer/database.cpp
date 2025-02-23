@@ -9,6 +9,14 @@ Database &Database::getInstance()
     static Database instance;
     return instance;
 }
+
+//重写析构函数
+Database::~Database()
+{
+    //关闭数据库
+    db.close();
+}
+
 void Database::initdatabase(){
     //设置数据库user
     db.setHostName("localhost");
@@ -33,6 +41,7 @@ void Database::initdatabase(){
         QMessageBox::critical(NULL,"连接","连接数据库失败！");
     }
 }
+
 //注册
 bool Database::regist(const char *username,const char *password)
 {
@@ -74,17 +83,16 @@ bool Database::login(const char* username,const char* password)
 }
 
 //下线
-bool Database:: offline(QString username)
+void Database:: update_online_state(QString username)
 {
     if(username.isEmpty())
-        return false;
+        return ;
     else
     {
         QSqlQuery query;
         qDebug() << username;
         QString sql= QString("update usrInfo set online=0 where name=\'%1\' and online=1").arg(username);
         query.exec(sql);
-        return true;
     }
 }
 
@@ -109,7 +117,7 @@ QStringList Database:: get_Online_friend()
 //查询指定好友
 QStringList Database::Search_friend(QString name)
 {
-    qDebug() << name;
+    qDebug() << "查询指定好友";
     QStringList results;
     QString online_state=" ";
     QSqlQuery query;
@@ -128,10 +136,51 @@ QStringList Database::Search_friend(QString name)
 
     return results;
 }
-//重写析构函数
-Database::~Database()
+
+//添加好友
+int Database::add_friend(const char *friend_name, const char *login_name)
 {
-    //关闭数据库
-    db.close();
+    qDebug() << "添加好友...";
+    QSqlQuery query;
+    QString sql = QString("select * from friend where (id=(select id from usrInfo where name=\'%1\') and (friendId=(select id from usrInfo where name=\'%2\')) or (id=(select id from usrInfo where name=\'%3\') and (friendId=(select id from usrInfo where name=\'%4\'))").arg(friend_name).arg(login_name).arg(login_name).arg(friend_name);
+    query.exec(sql);
+
+    qDebug() << sql;
+
+    if(friend_name == NULL && login_name == NULL)
+    {
+        return -1;
+    }
+
+    if(query.next())
+    {
+        return 0;
+    }
+    else{
+        if(query.next())
+        {
+            query.exec(QString("select online from usrInfo where name =\'%1\'").arg(friend_name));
+            int result = query.value(0).toInt();
+
+            if(result == 1)
+                return 1;
+
+            else if(result == 0)
+                return 2;
+        }
+        else
+            return 3;
+        }
+}
+
+//处理添加好友成功的请求
+void Database::handle_agree_friend(const char *login_name, const char *friend_name)
+{
+    if(login_name == NULL || friend_name == NULL) return ;
+
+    qDebug() << "处理添加好友成功的请求";
+    QSqlQuery query;
+    QString sql = QString("insert into friend values((select id from usr usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(login_name).arg(friend_name);
+    query.exec(sql);
 }
 

@@ -43,6 +43,7 @@ void TcpServer::loadConfig()
         QMessageBox::critical(this,"open config","open config failed");
     }
 }
+
 void TcpServer::listening()
 {
     //如果监听到client端的用户请求

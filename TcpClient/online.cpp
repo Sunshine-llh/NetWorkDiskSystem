@@ -2,6 +2,7 @@
 #include "ui_online.h"
 #include "protocol.h"
 #include <QDebug>
+#include "tcpclient.h"
 Online::Online(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Online)
@@ -29,3 +30,25 @@ void Online::show_Online_Usr(PDU *pdu)
     }
    free(pdu);
 }
+
+//加好友请求
+void Online::on_addFriend_pb_clicked()
+{
+    qDebug() << "点击加好友按钮...";
+    QListWidgetItem *Item = ui->online_lw->currentItem();
+    QString friend_name = Item->text();
+
+    //获取当前用户和所加好友的关系
+    QString login_name = TcpClient::getInstance().get_login_name();
+
+    PDU *pdu = mkPDU(0);
+    pdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
+    memcpy(pdu->caData, login_name.toStdString().c_str(), login_name.size());
+    memcpy(pdu->caData + 32, friend_name.toStdString().c_str(), 32);
+
+    TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+    qDebug() << "点击加好友按钮...";
+    free(pdu);
+    pdu = NULL;
+}
+
