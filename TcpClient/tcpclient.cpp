@@ -79,6 +79,7 @@ void TcpClient::show_information()
     uint uiMsgLen = uiPDULen - sizeof(PDU);
     PDU *pdu = mkPDU(uiMsgLen);
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
+
     qDebug() << pdu->uiMsgType;
     qDebug() << pdu->caData << "test---";
 
@@ -91,6 +92,8 @@ void TcpClient::show_information()
             QMessageBox::information(this,"注册",pdu->caData);
         else
             QMessageBox::information(this,"注册",pdu->caData);
+        free(pdu);
+        pdu = NULL;
         break;
     }
 
@@ -106,6 +109,9 @@ void TcpClient::show_information()
             OpeWidget::getInstance().show();
             this->hide();
         }
+
+        free(pdu);
+        pdu = NULL;
         break;
     }
 
@@ -115,6 +121,9 @@ void TcpClient::show_information()
             QMessageBox::information(this,"退出",pdu->caData);
         else
             QMessageBox::information(this,"退出",pdu->caData);
+
+        free(pdu);
+        pdu = NULL;
         break;
     }
 
@@ -122,17 +131,20 @@ void TcpClient::show_information()
     case ENUM_MSG_TYPE_ALL_ONLINE_RESPOND :
     {
         qDebug() << "接收服务器返回的在线好友...";
-        qDebug()<< pdu->caMsg;
+        qDebug()<< *(pdu->caMsg);
         OpeWidget::getInstance().get_Friend()->showAllOnlineUsr(pdu);
+
+        free(pdu);
+        pdu = NULL;
 
         break;
     }
 
-    //接受服务器返回的用户指定查询好友
+    //接受服务器返回的用户指定添加好友
      case ENUM_MSG_TYPE_SEARCH_USR_RESPOND:
     {
 
-        qDebug() << "接受服务器返回的用户指定查询好友...";
+        qDebug() << "接受服务器返回的用户指定添加好友...";
         char name[32];
         char online_state[32];
 
@@ -147,6 +159,9 @@ void TcpClient::show_information()
             QMessageBox::information(this, "搜索好友", QString("\'%1\' :\'%2\'").arg(OpeWidget::getInstance().get_Friend()->Search_name).arg(online_state));
         }
 
+        free(pdu);
+        pdu = NULL;
+
         break;
     }
     //回复好友添加请求
@@ -158,15 +173,17 @@ void TcpClient::show_information()
 
         PDU *respdu =mkPDU(0);
         memcpy(respdu->caData, pdu->caData, 64);
-        int res = QMessageBox::information(this, "好友添加回复", QString("\'%1\' want to add with you?").arg(friend_name));
+        int res = QMessageBox::information(this, "好友添加回复", QString("\'%1\' want to add with you?").arg(friend_name), QMessageBox::Yes, QMessageBox::No);
 
         if(res == QMessageBox::Yes)
         {
             respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_AGGREE;
+            qDebug() << "同意...";
         }
         else
         {
             respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REFUSE;
+            qDebug() << "拒绝...";
         }
 
         m_tcpScoket.write((char*)respdu, respdu->uiMsgLen);
@@ -177,7 +194,12 @@ void TcpClient::show_information()
 
     case ENUM_MSG_TYPE_ADD_FRIEND_RESPOND:
     {
-        QMessageBox::information(this,"好友请求",pdu->caData);
+        char friend_name[64] = {'\0'};
+        strncpy(friend_name,pdu->caData, 64);
+        QMessageBox::information(this,"好友请求",friend_name);
+        qDebug() << friend_name << "friend_name...";
+        free(pdu);
+        pdu = NULL;
         break;
     }
 
@@ -188,6 +210,8 @@ void TcpClient::show_information()
         char friend_name[32] = {'\0'};
         strncpy(friend_name, pdu->caData + 32, 32);
         QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'成功！").arg(friend_name));
+        free(pdu);
+        pdu = NULL;
         break;
 
     }
@@ -197,13 +221,16 @@ void TcpClient::show_information()
        char friend_name[32] = {'\0'};
        strncpy(friend_name, pdu->caData + 32, 32);
        QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'失败！").arg(friend_name));
+       free(pdu);
+       pdu = NULL;
        break;
 
     }
+
+       qDebug() << "default...";
     default:
     {
-        qDebug() << "default...";
-        pdu = NULL;
+
         break;
     }
     }
@@ -226,8 +253,8 @@ void TcpClient::on_login_pb_clicked()
 
     PDU *pdu=mkPDU(0);
     pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_REQUEST;
-    strncpy(pdu->caData,username.toStdString().c_str(),32);
-    strncpy(pdu->caData+32,password.toStdString().c_str(),32);
+    memcpy(pdu->caData,username.toStdString().c_str(),32);
+    memcpy(pdu->caData+32,password.toStdString().c_str(),32);
     m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
     free(pdu);
     pdu = NULL;

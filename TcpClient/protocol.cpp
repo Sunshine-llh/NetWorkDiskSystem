@@ -5,7 +5,7 @@ PDU *mkPDU(uint uiMsgLen)
     uint uiPDULen=sizeof (PDU)+uiMsgLen;
     //分配内存
     PDU *pdu=(PDU*)malloc(uiPDULen);
-
+    memset(pdu,0,uiPDULen);
     if(NULL==pdu)
     {
         exit(EXIT_FAILURE);

@@ -135,10 +135,11 @@ void MyTcpSocket::remsg()
         strncpy(friend_name, pdu->caData+32, 32);
         int res = Database::getInstance().add_friend(client_name, friend_name);
 
+        qDebug() << 'res:' << res << "...";
         PDU *respdu = NULL;
 
         if(res == -1)
-        {
+        {   qDebug() << "-1 ...";
             PDU *respdu =mkPDU(0);
             respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
             strcpy(respdu->caData, UNKNOW_ERROR);
@@ -146,6 +147,7 @@ void MyTcpSocket::remsg()
         }
         else if(res == 0)
         {
+            qDebug() << "0 ...";
             PDU *respdu =mkPDU(0);
             respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
             strcpy(respdu->caData, EXISTED_FRIEND);
@@ -153,10 +155,12 @@ void MyTcpSocket::remsg()
         }
         else if(res == 1)
         {
+            qDebug() << "1 ...";
+            pdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
             MyTcpServer::getInstance().resend(friend_name, pdu);
         }
         else {
-
+            qDebug() << "2 ...";
             PDU *respdu =mkPDU(0);
             respdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_RESPOND;
             strcpy(respdu->caData, ADD_FRIEND_OFFLINE);
@@ -166,24 +170,50 @@ void MyTcpSocket::remsg()
         respdu = NULL;
     }
 
+        //好友添加请求
+        //1、同意
+         case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
+        {
+            char login_name[32] = {'\0'};
+            char friend_name[32] = {'\0'};
+            qDebug() << "同意...";
+            strncpy(login_name, pdu->caData, 32);
+            strncpy(friend_name, pdu->caData + 32, 32);
+            Database::getInstance().handle_agree_friend(login_name, friend_name);
+
+            MyTcpServer::getInstance().resend(login_name, pdu);
+            break;
+        }
+        //2、拒绝
+        case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
+        {
+            char login_name[32] = {'\0'};
+            strncpy(login_name, pdu->caData, 32);
+            qDebug() << "拒绝...";
+
+            MyTcpServer::getInstance().resend(login_name, pdu);
+            break;
+        }
+
+
     //在线查询好友请求
     case ENUM_MSG_TYPE_ALL_ONLINE_REQUEST:
     {
         qDebug() << "在线查询好友请求";
         results = Database:: getInstance().get_Online_friend();
+
         if(results.isEmpty())
         {
             return;
         }
-        free(pdu);
 
         uint Msg_Len = results.size() * 32;
         PDU *rspdu = mkPDU(Msg_Len);
         rspdu->uiMsgType = ENUM_MSG_TYPE_ALL_ONLINE_RESPOND;
-        //strcpy(pdu->caData, SEARCH_USR_ONLINE);
+
         for(int i=0;i<results.size();i++)
         {
-            memcpy((char *)rspdu->caMsg + i*32,results.at(i).toStdString().c_str(),results.at(i).size());
+            memcpy((char *)rspdu->caMsg + i*32, results.at(i).toStdString().c_str(), results.at(i).size()+1);
             qDebug() << results.at(i);
         }
 
@@ -231,29 +261,6 @@ void MyTcpSocket::remsg()
         break;
     }
 
-    //好友添加请求
-    //1、同意
-     case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
-    {
-        char login_name[32] = {'\0'};
-        char friend_name[32] = {'\0'};
-
-        strncpy(login_name, pdu->caData, 32);
-        strncpy(friend_name, pdu->caData + 32, 32);
-        Database::getInstance().handle_agree_friend(login_name, friend_name);
-
-        MyTcpServer::getInstance().resend(login_name, pdu);
-        break;
-    }
-    //2、拒绝
-    case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
-    {
-        char login_name[32] = {'\0'};
-        strncpy(login_name, pdu->caData, 32);
-
-        MyTcpServer::getInstance().resend(login_name, pdu);
-        break;
-    }
     default: break;
 
     }

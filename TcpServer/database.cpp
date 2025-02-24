@@ -101,14 +101,13 @@ QStringList Database:: get_Online_friend()
 {
     QSqlQuery query;
     QStringList results;
-    QString sql = QString("select * from usrInfo where online=1");
+    QString sql = QString("select name from usrInfo where online=1");
     query.exec(sql);
-
+    results.clear();
     QString name;
     while(query.next())
     {
-        name = query.value(1).toString();
-        results.append(name);
+        results.append(query.value(0).toString());
     }
     qDebug() << results;
     return results;
@@ -138,9 +137,11 @@ QStringList Database::Search_friend(QString name)
 }
 
 //添加好友
-int Database::add_friend(const char *friend_name, const char *login_name)
+int Database::add_friend(const char *login_name, const char *friend_name)
 {
     qDebug() << "添加好友...";
+    qDebug() << login_name << friend_name;
+
     QSqlQuery query;
     QString sql = QString("select * from friend where (id=(select id from usrInfo where name=\'%1\') and (friendId=(select id from usrInfo where name=\'%2\')) or (id=(select id from usrInfo where name=\'%3\') and (friendId=(select id from usrInfo where name=\'%4\'))").arg(friend_name).arg(login_name).arg(login_name).arg(friend_name);
     query.exec(sql);
@@ -152,15 +153,19 @@ int Database::add_friend(const char *friend_name, const char *login_name)
         return -1;
     }
 
+
     if(query.next())
     {
         return 0;
     }
     else{
+        query.exec(QString("select online from usrInfo where name =\'%1\'").arg(friend_name));
+
         if(query.next())
         {
-            query.exec(QString("select online from usrInfo where name =\'%1\'").arg(friend_name));
             int result = query.value(0).toInt();
+
+            qDebug() << QString("select online from usrInfo where name =\'%1\'").arg(friend_name);
 
             if(result == 1)
                 return 1;
@@ -178,7 +183,7 @@ void Database::handle_agree_friend(const char *login_name, const char *friend_na
 {
     if(login_name == NULL || friend_name == NULL) return ;
 
-    qDebug() << "处理添加好友成功的请求";
+    qDebug() << "处理添加好友成功的请求" << login_name << friend_name;
     QSqlQuery query;
     QString sql = QString("insert into friend values((select id from usr usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(login_name).arg(friend_name);
     query.exec(sql);
