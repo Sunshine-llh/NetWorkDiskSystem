@@ -142,23 +142,26 @@ int Database::add_friend(const char *login_name, const char *friend_name)
     qDebug() << "添加好友...";
     qDebug() << login_name << friend_name;
 
-    QSqlQuery query;
-    QString sql = QString("select * from friend where (id=(select id from usrInfo where name=\'%1\') and (friendId=(select id from usrInfo where name=\'%2\')) or (id=(select id from usrInfo where name=\'%3\') and (friendId=(select id from usrInfo where name=\'%4\'))").arg(friend_name).arg(login_name).arg(login_name).arg(friend_name);
-    query.exec(sql);
-
-    qDebug() << sql;
-
     if(friend_name == NULL && login_name == NULL)
     {
         return -1;
     }
 
 
+
+    QString sql = QString("select * from friend where (id=(select id from usrInfo where name=\'%1\') and (friendId=(select id from usrInfo where name=\'%2\')) or (id=(select id from usrInfo where name=\'%3\') and (friendId=(select id from usrInfo where name=\'%4\'))").arg(friend_name).arg(login_name).arg(login_name).arg(friend_name);
+    QSqlQuery query;
+    query.exec(sql);
+
+    qDebug() << sql;
+
+
     if(query.next())
     {
         return 0;
     }
-    else{
+    else
+    {
         query.exec(QString("select online from usrInfo where name =\'%1\'").arg(friend_name));
 
         if(query.next())
@@ -185,7 +188,8 @@ void Database::handle_agree_friend(const char *login_name, const char *friend_na
 
     qDebug() << "处理添加好友成功的请求" << login_name << friend_name;
     QSqlQuery query;
-    QString sql = QString("insert into friend values((select id from usr usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(login_name).arg(friend_name);
+    QString sql = QString("insert into friend values((select id from usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(login_name).arg(friend_name);
+    qDebug() << sql;
     query.exec(sql);
 }
 

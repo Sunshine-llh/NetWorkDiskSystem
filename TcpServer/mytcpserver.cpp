@@ -48,12 +48,17 @@ void MyTcpServer::resend(const char *client_name, PDU *pdu)
     if(client_name == NULL || pdu == NULL)
         return;
 
+    QString str_name = client_name;
+
     for(int i=0; i<mysocketlist.size();i++)
     {
-        if(mysocketlist.at(i)->get_login_name() == client_name)
+        qDebug() << mysocketlist.at(i)->get_login_name();
+
+        if(mysocketlist.at(i)->get_login_name() == str_name)
         {
-            qDebug() << "resend...";
-            mysocketlist.at(i)->write((char*)pdu, pdu->uiPDULen);
+            qDebug() << "resend..." << mysocketlist.at(i)->get_login_name();
+
+            mysocketlist.at(i)->write((char*)pdu,pdu->uiPDULen);
             break;
         }
     }

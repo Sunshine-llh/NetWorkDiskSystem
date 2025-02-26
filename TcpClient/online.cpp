@@ -35,7 +35,7 @@ void Online::show_Online_Usr(PDU *pdu)
 //加好友请求
 void Online::on_addFriend_pb_clicked()
 {
-    qDebug() << "点击加好友按钮...";
+
     QListWidgetItem *Item = ui->online_lw->currentItem();
     QString friend_name = Item->text();
 
@@ -44,11 +44,11 @@ void Online::on_addFriend_pb_clicked()
 
     PDU *pdu = mkPDU(0);
     pdu->uiMsgType = ENUM_MSG_TYPE_ADD_FRIEND_REQUEST;
-    memcpy(pdu->caData, login_name.toStdString().c_str(), login_name.size()+1);
-    memcpy(pdu->caData + 32, friend_name.toStdString().c_str(), friend_name.size()+1);
+    memcpy(pdu->caData, login_name.toStdString().c_str(), login_name.size());
+    memcpy(pdu->caData + 32, friend_name.toStdString().c_str(), friend_name.size());
 
     TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
-    qDebug() << "点击加好友按钮...";
+    qDebug() << "点击加好友按钮..." << login_name << friend_name;
     free(pdu);
     pdu = NULL;
 }

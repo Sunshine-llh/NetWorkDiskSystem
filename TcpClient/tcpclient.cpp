@@ -80,9 +80,6 @@ void TcpClient::show_information()
     PDU *pdu = mkPDU(uiMsgLen);
     m_tcpScoket.read((char*)pdu+sizeof(uint),uiPDULen-sizeof(uint));
 
-    qDebug() << pdu->uiMsgType;
-    qDebug() << pdu->caData << "test---";
-
     //判断返回的类型
     switch (pdu->uiMsgType) {
 
@@ -164,16 +161,21 @@ void TcpClient::show_information()
 
         break;
     }
-    //回复好友添加请求
+
+    //添加好友请求
     case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
     {
         qDebug() << "收到好友添加请求";
-        char friend_name[32] = {'\0'};
-        strncpy(friend_name, pdu->caData+32, 32);
+        char client_name[32] = {'\0'};
+        strncpy(client_name, pdu->caData, 32);
+        qDebug() << client_name;
+
+        int res = QMessageBox::information(this, "添加好友", QString("\'%1\' want to add with you?").arg(client_name), QMessageBox::Yes, QMessageBox::No);
+
+        qDebug() << res;
 
         PDU *respdu =mkPDU(0);
         memcpy(respdu->caData, pdu->caData, 64);
-        int res = QMessageBox::information(this, "好友添加回复", QString("\'%1\' want to add with you?").arg(friend_name), QMessageBox::Yes, QMessageBox::No);
 
         if(res == QMessageBox::Yes)
         {
@@ -186,7 +188,7 @@ void TcpClient::show_information()
             qDebug() << "拒绝...";
         }
 
-        m_tcpScoket.write((char*)respdu, respdu->uiMsgLen);
+        m_tcpScoket.write((char*)respdu, respdu->uiPDULen);
         free(respdu);
         respdu =NULL;
         break;
@@ -198,8 +200,6 @@ void TcpClient::show_information()
         strncpy(friend_name,pdu->caData, 64);
         QMessageBox::information(this,"好友请求",friend_name);
         qDebug() << friend_name << "friend_name...";
-        free(pdu);
-        pdu = NULL;
         break;
     }
 
@@ -209,9 +209,7 @@ void TcpClient::show_information()
         qDebug() << "接受服务器返回的添加好友成功请求...";
         char friend_name[32] = {'\0'};
         strncpy(friend_name, pdu->caData + 32, 32);
-        QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'成功！").arg(friend_name));
-        free(pdu);
-        pdu = NULL;
+        QMessageBox::information(this, "添加好友", QString("添加%1好友成功").arg(friend_name));
         break;
 
     }
@@ -220,7 +218,7 @@ void TcpClient::show_information()
        qDebug() << "接受服务器返回的添加好友失败请求...";
        char friend_name[32] = {'\0'};
        strncpy(friend_name, pdu->caData + 32, 32);
-       QMessageBox::information(this, "添加好友", QString("添加好友:\'%1\'失败！").arg(friend_name));
+       QMessageBox::information(this, "添加好友", QString("添加%1好友成功").arg(friend_name));
        free(pdu);
        pdu = NULL;
        break;
