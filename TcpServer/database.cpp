@@ -187,9 +187,51 @@ void Database::handle_agree_friend(const char *login_name, const char *friend_na
     if(login_name == NULL || friend_name == NULL) return ;
 
     qDebug() << "处理添加好友成功的请求" << login_name << friend_name;
+
     QSqlQuery query;
     QString sql = QString("insert into friend values((select id from usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(login_name).arg(friend_name);
     qDebug() << sql;
     query.exec(sql);
+
+    sql = QString("insert into friend values((select id from usrInfo where name=\'%1\'),(select id from usrInfo where name=\'%2\'))").arg(friend_name).arg(login_name);
+    qDebug() << sql;
+    query.exec(sql);
 }
 
+//返回login_name新的在线好友列表
+QStringList Database::get_online_friends(const char *login_name)
+{
+    QStringList results;
+
+    qDebug() << "返回login_name新的在线好友列表...";
+
+    QSqlQuery query;
+    QString sql = QString("select * from usrInfo where online=1 and id in (select friendId from friend where id=(select id from usrInfo where name =\'%1\'))").arg(login_name);
+    qDebug() << sql;
+    query.exec(sql);
+
+    while(query.next())
+    {
+        results.append(query.value(1).toString());
+    }
+    return results;
+}
+
+//删除好友
+bool Database::delete_friend(const char *login_name, const char *friend_name)
+{
+    if(login_name == NULL || friend_name == NULL) return false;
+    qDebug() << "数据库删除好友...";
+
+    QSqlQuery query;
+    QString sql = QString("delete from friend where id=(select id from usrInfo where name =\'%1\') and friendId=(select id from usrInfo where name=\'%2\')").arg(login_name).arg(friend_name);
+    qDebug() << sql;
+    query.exec(sql);
+
+    sql = QString("delete from friend where id=(select id from usrInfo where name =\'%1\') and friendId=(select id from usrInfo where name=\'%2\')").arg(friend_name).arg(login_name);
+    qDebug() << sql;
+    query.exec(sql);
+
+    return true;
+
+}

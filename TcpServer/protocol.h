@@ -18,6 +18,7 @@
 #define ADD_FRIEND_OFFLINE "usr offline"
 #define ADD_FRIEND_NO_EXIST "usr not exist"
 #define DEL_FRIEND_OK "delete friend ok"
+#define DEL_FRIEND_FAILED "delete friend failed"
 #define DIR_NO_EXIST "cur dir not exist"
 #define FILE_NAME_EXIST "file name exist"
 #define CREAT_DIR_OK "create dir ok"

@@ -279,6 +279,61 @@ void MyTcpSocket::remsg()
 
         break;
     }
+    case ENUM_MSG_TYPE_FLUSH_FRIEND_REQUEST:
+    {
+        qDebug() << "服务器响应刷新在线好友...";
+        char login_name[32] = {'\0'};
+        memcpy(login_name, pdu->caData, 32);
+        QStringList results = Database::getInstance().get_online_friends(login_name);
+
+        uint Msg_Len = results.size() * 32;
+
+        PDU * respdu = mkPDU(Msg_Len);
+        respdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FRIEND_RESPOND;
+
+        for(int i=0; i<results.size();i++)
+        {
+            memcpy(respdu->caMsg + i * 32, results.at(i).toStdString().c_str(), 32);
+        }
+        write((char*)respdu, respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+
+        break;
+
+    }
+     //接受删除好友请求
+    case ENUM_MSG_TYPE_DELETE_FRIEND_REQUEST:
+    {
+        qDebug() << "服务器接受删除好友请求...";
+        char login_name[32] = {'\0'};
+        char friend_name[32] = {'\0'};
+        memcpy(login_name, pdu->caData, 32);
+        memcpy(friend_name, pdu->caData + 32, 32);
+
+        bool res = Database::getInstance().delete_friend(login_name, friend_name);
+
+        PDU *respdu = mkPDU(0);
+
+        if(res)
+        {
+            strcpy(respdu->caData, DEL_FRIEND_OK);
+            respdu->uiMsgType = ENUM_MSG_TYPE_DELETE_FRIEND_RESPOND;
+            write((char*)respdu, respdu->uiPDULen);
+            MyTcpServer::getInstance().resend(friend_name, pdu);
+        }
+        else
+        {
+            strcpy(respdu->caData, DEL_FRIEND_FAILED);
+            respdu->uiMsgType = ENUM_MSG_TYPE_DELETE_FRIEND_RESPOND;
+            write((char*)respdu, respdu->uiPDULen);
+        }
+        free(respdu);
+        free(pdu);
+        respdu = NULL;
+        pdu = NULL;
+        break;
+    }
 
     default: break;
 

@@ -20,6 +20,8 @@ public:
     QStringList Search_friend(QString name);
     int add_friend(const char *friend_name, const char *login_name);
     void handle_agree_friend(const char *friend_name, const char * login_name);
+    QStringList get_online_friends(const char * login_name);
+    bool delete_friend(const char *login_name, const char *friend_name);
     ~Database();
 
 signals:

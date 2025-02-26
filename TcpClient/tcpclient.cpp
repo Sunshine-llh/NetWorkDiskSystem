@@ -209,7 +209,7 @@ void TcpClient::show_information()
         qDebug() << "接受服务器返回的添加好友成功请求...";
         char friend_name[32] = {'\0'};
         strncpy(friend_name, pdu->caData + 32, 32);
-        QMessageBox::information(this, "添加好友", QString("添加%1好友成功").arg(friend_name));
+        QMessageBox::information(this, "添加好友", QString("添加%1好友成功！").arg(friend_name));
         break;
 
     }
@@ -218,14 +218,39 @@ void TcpClient::show_information()
        qDebug() << "接受服务器返回的添加好友失败请求...";
        char friend_name[32] = {'\0'};
        strncpy(friend_name, pdu->caData + 32, 32);
-       QMessageBox::information(this, "添加好友", QString("添加%1好友成功").arg(friend_name));
+       QMessageBox::information(this, "添加好友", QString("添加%1好友失败！").arg(friend_name));
        free(pdu);
        pdu = NULL;
        break;
 
     }
 
-       qDebug() << "default...";
+    //接受服务器刷新的在线好友列表
+     case ENUM_MSG_TYPE_FLUSH_FRIEND_RESPOND:
+    {
+        qDebug() << "接受服务器刷新的在线好友列表...";
+        OpeWidget::getInstance().get_Friend()->update_Online_FriendList(pdu);
+        break;
+    }
+
+    case ENUM_MSG_TYPE_DELETE_FRIEND_REQUEST:
+    {
+        char friend_name[32] = {'\0'};
+        strncpy(friend_name, pdu->caData, 32);
+
+        qDebug() << "客户端接收删除好友请求...";
+        QMessageBox::information(this, "删除好友", QString("%1将你删除！").arg(friend_name));
+        break;
+    }
+
+    case ENUM_MSG_TYPE_DELETE_FRIEND_RESPOND:
+    {
+        char msg[32] ={'\0'};
+        memcpy(msg, pdu->caData, 32);
+        qDebug() << msg;
+        QMessageBox::information(this, "删除好友", msg);
+        break;
+    }
     default:
     {
 

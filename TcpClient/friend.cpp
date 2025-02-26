@@ -42,6 +42,9 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     setLayout(pMain);
     connect(m_pShowOnlineUsrPB,SIGNAL(clicked(bool)),this,SLOT(showOnline()));
     connect(m_pSearchUsrPB,SIGNAL(clicked(bool)),this,SLOT(showFriend()));
+    connect(m_pFlushFriendPB, SIGNAL(clicked(bool)),this,SLOT(Flush_friends()));
+    connect(m_pDelFriendPB, SIGNAL(clicked(bool)), this, SLOT(delete_friend()));
+
 }
 
 // 在线用户请求
@@ -83,6 +86,40 @@ void Friend::showFriend()
 
 }
 
+//点击刷新在线好友请求按钮
+void Friend::Flush_friends()
+{
+    qDebug() << "点击刷新在线好友请求按钮...";
+
+    QString login_name = TcpClient::getInstance().get_login_name();
+    PDU *pdu = mkPDU(0);
+    pdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FRIEND_REQUEST;
+    memcpy(pdu->caData, login_name.toStdString().c_str(),32);
+    TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+
+    free(pdu);
+    pdu = NULL;
+}
+
+//点击删除好友请求按钮
+void Friend::delete_friend()
+{
+    QString Delete_name = m_pFriendListWidget->currentItem()->text();
+
+    qDebug() << "点击删除好友请求...";
+
+    QString login_name = TcpClient::getInstance().get_login_name();
+    PDU *pdu = mkPDU(0);
+    pdu->uiMsgType = ENUM_MSG_TYPE_DELETE_FRIEND_REQUEST;
+    memcpy(pdu->caData, login_name.toStdString().c_str(), 32);
+    memcpy(pdu->caData + 32, Delete_name.toStdString().c_str(), 32);
+    TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+
+    free(pdu);
+    pdu = NULL;
+
+}
+
 //展示服务器发送过来的在线用户
 void Friend::showAllOnlineUsr(PDU *pdu)
 {
@@ -90,4 +127,19 @@ void Friend::showAllOnlineUsr(PDU *pdu)
         return;
     m_pOnline->show_Online_Usr(pdu);
 
+}
+
+//更新当前用户的好友在线列表
+void Friend::update_Online_FriendList(PDU *pdu)
+{
+    qDebug() << "更新当前用户的好友在线列表...";
+
+    char caName[32] = {'\0'};
+    uint ui_size = pdu->uiMsgLen / 32;
+
+    for(int i=0;i<ui_size;i++)
+    {
+        memcpy(caName,pdu->caMsg + i * 32, 32);
+        m_pFriendListWidget->addItem(caName);
+    }
 }
