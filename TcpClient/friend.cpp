@@ -150,7 +150,7 @@ void Friend::group_chat()
     {
         QString login_name = TcpClient::getInstance().get_login_name();
         //unit msg_len = msg.size() * 32;
-        PDU *pdu = mkPDU(0)
+        PDU *pdu = mkPDU(0);
     }
     else
     {
