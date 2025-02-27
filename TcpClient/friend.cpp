@@ -46,6 +46,7 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     connect(m_pFlushFriendPB, SIGNAL(clicked(bool)),this,SLOT(Flush_friends()));
     connect(m_pDelFriendPB, SIGNAL(clicked(bool)), this, SLOT(delete_friend()));
     connect(m_pPrivateChatPB, SIGNAL(clicked(bool)), this, SLOT(private_chat()));
+    connect(m_pMsgSendPB, SIGNAL(clicked(bool)), this, SLOT(group_chat()));
 
 }
 
@@ -140,6 +141,22 @@ void Friend::private_chat()
     }
 }
 
+//点击发送信息按钮
+void Friend::group_chat()
+{
+    QString msg = m_pInputMsgLE->text();
+
+    if(m_pFriendListWidget != NULL)
+    {
+        QString login_name = TcpClient::getInstance().get_login_name();
+        //unit msg_len = msg.size() * 32;
+        PDU *pdu = mkPDU(0)
+    }
+    else
+    {
+        QMessageBox::information(this, "群聊消息", "无在线好友！");
+    }
+}
 //展示服务器发送过来的在线用户
 void Friend::showAllOnlineUsr(PDU *pdu)
 {
@@ -164,3 +181,14 @@ void Friend::update_Online_FriendList(PDU *pdu)
     }
 }
 
+//更新群聊信息
+void Friend::update_Group_Msg(PDU *pdu)
+{
+    qDebug() << "更新群聊信息...";
+    char send_name[32] = {'\0'};
+    memcpy(send_name, pdu->caData, 32);
+    QString msg = QString("%1: %2").arg(send_name).arg((char*)pdu->caMsg);
+
+    m_pShowMsgTE->append(msg);
+
+}

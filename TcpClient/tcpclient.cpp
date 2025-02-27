@@ -262,7 +262,7 @@ void TcpClient::show_information()
            PrivateChat::getInstance().show();
        }
        char send_name[32] = {"\0"};
-
+       memcpy(send_name, pdu->caData, 32);
        PrivateChat::getInstance().save_chat_name(send_name);
        PrivateChat::getInstance().update_msg(pdu);
        free(pdu);
