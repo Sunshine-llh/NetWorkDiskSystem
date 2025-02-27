@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <string.h>
 #include <opewidget.h>
+#include "privatechat.h"
 TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
@@ -251,6 +252,23 @@ void TcpClient::show_information()
         QMessageBox::information(this, "删除好友", msg);
         break;
     }
+
+    //接受好友私聊信息
+    case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
+    {
+       qDebug() << "接受好友私聊信息...";
+       if(PrivateChat::getInstance().isHidden())
+       {
+           PrivateChat::getInstance().show();
+       }
+       char send_name[32] = {"\0"};
+
+       PrivateChat::getInstance().save_chat_name(send_name);
+       PrivateChat::getInstance().update_msg(pdu);
+       free(pdu);
+       pdu = NULL;
+       break;
+    }
     default:
     {
 
@@ -281,6 +299,7 @@ void TcpClient::on_login_pb_clicked()
     m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
     free(pdu);
     pdu = NULL;
+
 }
 
 //注册按钮
@@ -306,6 +325,7 @@ void TcpClient::on_regist_pb_clicked()
         QMessageBox::warning(this,"提示","用户名密码不为空！");
         return;
     }
+
 }
 
 //注销按钮

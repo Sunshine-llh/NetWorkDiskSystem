@@ -335,6 +335,17 @@ void MyTcpSocket::remsg()
         break;
     }
 
+     //接受私聊请求
+    case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
+    {
+           qDebug() << "服务器接受私聊请求...";
+           char friend_name[32] = {'\0'};
+           memcpy(friend_name, pdu->caData + 32, 32);
+
+           MyTcpServer::getInstance().resend(friend_name, pdu);
+           break;
+    }
+
     default: break;
 
     }

@@ -4,6 +4,7 @@
 #include "tcpclient.h"
 #include <QInputDialog>
 #include <QMessageBox>
+#include "privatechat.h"
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -44,6 +45,7 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
     connect(m_pSearchUsrPB,SIGNAL(clicked(bool)),this,SLOT(showFriend()));
     connect(m_pFlushFriendPB, SIGNAL(clicked(bool)),this,SLOT(Flush_friends()));
     connect(m_pDelFriendPB, SIGNAL(clicked(bool)), this, SLOT(delete_friend()));
+    connect(m_pPrivateChatPB, SIGNAL(clicked(bool)), this, SLOT(private_chat()));
 
 }
 
@@ -120,6 +122,24 @@ void Friend::delete_friend()
 
 }
 
+//点击私聊按钮
+void Friend::private_chat()
+{
+    if(m_pFriendListWidget != NULL)
+    {
+        QString chat_name = m_pFriendListWidget->currentItem()->text();
+        PrivateChat::getInstance().save_chat_name(chat_name.toStdString().c_str());
+        if(PrivateChat::getInstance().isHidden())
+        {
+            PrivateChat::getInstance().show();
+        }
+    }
+    else
+    {
+        QMessageBox::information(this, "私聊", "请选择私聊对象！");
+    }
+}
+
 //展示服务器发送过来的在线用户
 void Friend::showAllOnlineUsr(PDU *pdu)
 {
@@ -143,3 +163,4 @@ void Friend::update_Online_FriendList(PDU *pdu)
         m_pFriendListWidget->addItem(caName);
     }
 }
+

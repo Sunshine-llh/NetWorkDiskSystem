@@ -27,6 +27,7 @@ public slots:
     void showFriend();
     void Flush_friends();
     void delete_friend();
+    void private_chat();
 
 private:
     QTextEdit *m_pShowMsgTE;
