@@ -19,6 +19,7 @@ public:
     explicit Friend(QWidget *parent = nullptr);
     void showAllOnlineUsr(PDU *pdu);
     void update_Online_FriendList(PDU *pdu);
+    void update_Group_Msg(PDU *pdu);
 
 signals:
 
@@ -28,6 +29,7 @@ public slots:
     void Flush_friends();
     void delete_friend();
     void private_chat();
+    void group_chat();
 
 private:
     QTextEdit *m_pShowMsgTE;
