@@ -61,7 +61,7 @@ QTcpSocket &TcpClient:: getTcpSocket()
 //获取服务器结果
 void TcpClient::showConnect()
 {
-    QMessageBox::information(this,"连接服务器","SUCESS!!!");
+    qDebug() << "连接服务器成功！";
 }
 
 //保存用户登录名
@@ -267,6 +267,15 @@ void TcpClient::show_information()
        free(pdu);
        pdu = NULL;
        break;
+    }
+        //接受群聊信息
+    case ENUM_MSG_TYPE_GROUP_CHAT_RESPOND:
+    {
+        qDebug() << "客户端接受群聊响应...";
+
+        OpeWidget::getInstance().get_Friend()->update_Group_Msg(pdu);
+        break;
+
     }
     default:
     {

@@ -279,6 +279,7 @@ void MyTcpSocket::remsg()
 
         break;
     }
+
     case ENUM_MSG_TYPE_FLUSH_FRIEND_REQUEST:
     {
         qDebug() << "服务器响应刷新在线好友...";
@@ -344,6 +345,35 @@ void MyTcpSocket::remsg()
 
            MyTcpServer::getInstance().resend(friend_name, pdu);
            break;
+    }
+
+     //接受群聊请求
+    case ENUM_MSG_TYPE_GROUP_CHAT_REQUEST:
+    {
+        qDebug() << "接受服务器群聊请求...";
+        char login_name[32] = {'\0'};
+        memcpy(login_name, pdu->caData, 32);
+        qDebug() << login_name;
+
+        pdu->uiMsgType = ENUM_MSG_TYPE_GROUP_CHAT_RESPOND;
+        QStringList res = Database::getInstance().get_online_friends(login_name);
+
+        if(!res.isEmpty())
+        {
+            for(int i=0; i<res.size(); i++)
+            {
+                if(res.at(i) != login_name)
+                {
+                    MyTcpServer::getInstance().resend(res.at(i).toStdString().c_str(), pdu);
+                }
+            }
+        }
+        else
+        {
+            write((char*)pdu, pdu->uiPDULen);
+        }
+
+        break;
     }
 
     default: break;
