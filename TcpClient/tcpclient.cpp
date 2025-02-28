@@ -253,16 +253,15 @@ void TcpClient::show_information()
         break;
     }
 
-    //接受好友私聊信息
+        //接受好友私聊信息
     case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
     {
-       qDebug() << "接受好友私聊信息...";
        if(PrivateChat::getInstance().isHidden())
        {
            PrivateChat::getInstance().show();
        }
        char send_name[32] = {"\0"};
-
+       memcpy(send_name, pdu->caData, 32);
        PrivateChat::getInstance().save_chat_name(send_name);
        PrivateChat::getInstance().update_msg(pdu);
        free(pdu);
