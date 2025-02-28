@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "database.h"
 #include "mytcpserver.h"
+#include <QDir>
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
     connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
@@ -56,6 +57,10 @@ void MyTcpSocket::remsg()
             pdu = mkPDU(0);
             pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_RESPOND;
             strcpy(pdu->caData,REGIST_OK);
+
+            QDir dir;
+            qDebug() << QString("./%1").arg(caName);
+            qDebug() << "注册成功！" << dir.mkdir(QString("./%1").arg(caName));
             qDebug() << "注册成功!";
 
         }
@@ -350,7 +355,7 @@ void MyTcpSocket::remsg()
      //接受群聊请求
     case ENUM_MSG_TYPE_GROUP_CHAT_REQUEST:
     {
-        qDebug() << "接受服务器群聊请求...";
+        qDebug() << "ENUM_MSG_TYPE_CREATE_DIR_REQUEST...";
         char login_name[32] = {'\0'};
         memcpy(login_name, pdu->caData, 32);
         qDebug() << login_name;
@@ -373,7 +378,56 @@ void MyTcpSocket::remsg()
             write((char*)pdu, pdu->uiPDULen);
         }
 
+        free(pdu);
+        pdu = NULL;
         break;
+    }
+        //接受文件夹创建请求
+    case ENUM_MSG_TYPE_CREATE_DIR_REQUEST:
+    {
+        qDebug() << "服务器接受文件夹创建请求...";
+
+        QDir dir;
+        QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
+        qDebug() << Cur_path;
+
+        char create_dir_name[32] = {'\0'};
+        memcpy(create_dir_name, pdu->caData + 32 , 32);
+
+        qDebug() << create_dir_name;
+
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_CREATE_DIR_RESPOND;
+        bool res = dir.exists(create_dir_name);
+        qDebug() << "res" << res;
+
+        if(res)
+        {
+             QString create_dir_path= create_dir_name + QString("/") + Cur_path;
+             qDebug() << "新建文件路径：" << create_dir_path;
+
+             res = dir.exists(create_dir_path);
+             if(res)
+             {
+                  strcpy(respdu->caData, FILE_NAME_EXIST);
+             }
+             else
+             {
+                 dir.mkdir(create_dir_path);
+                 strcpy(respdu->caData, CREAT_DIR_OK);
+             }
+        }
+        else
+        {
+            strcpy(respdu->caData, DIR_NO_EXIST);
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+
+        free(respdu);
+        respdu = NULL;
+        break;
+
     }
 
     default: break;

@@ -20,6 +20,7 @@ public:
     QTcpSocket &getTcpSocket();
     void loadConfig();
     QString get_login_name();
+    QString get_Cur_path();
 
 public slots:
     void showConnect();
@@ -42,5 +43,6 @@ private:
     QTcpSocket m_tcpScoket;
     //用户登录名
     QString login_name;
+    QString Cur_path;
 };
 #endif // TCPCLIENT_H
