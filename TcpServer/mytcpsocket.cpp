@@ -2,6 +2,8 @@
 #include <QDebug>
 #include "database.h"
 #include "mytcpserver.h"
+#include <QDir>
+#include <QFileInfoList>
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
     connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
@@ -56,6 +58,10 @@ void MyTcpSocket::remsg()
             pdu = mkPDU(0);
             pdu->uiMsgType=ENUM_MSG_TYPE_REGIST_RESPOND;
             strcpy(pdu->caData,REGIST_OK);
+
+            QDir dir;
+            qDebug() << QString("./%1").arg(caName);
+            qDebug() << "注册成功！" << dir.mkdir(QString("./%1").arg(caName));
             qDebug() << "注册成功!";
 
         }
@@ -99,32 +105,6 @@ void MyTcpSocket::remsg()
         break;
     }
 
-    //下线请求
-    case ENUM_MSG_TYPE_OFFLINE_REQUEST:
-    {
-//        qDebug() << login_name;
-//        Database::getInstance().offline(login_name);
-
-//        if(rs)
-//        {
-//            free(pdu);
-//            pdu = mkPDU(0);
-//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-//            strcpy(pdu->caData,OFF_LINE_OK);
-//        }
-//        else
-//        {
-//            free(pdu);
-//            pdu = mkPDU(0);
-//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-//            strcpy(pdu->caData,OFF_LINE_FAILED);
-//            login_name = "";
-//        }
-//        write((char *)pdu,pdu->uiPDULen);
-//        free(pdu);
-//        pdu=NULL;
-//        break;
-    }
 
      //响应客户端添加好友请求
      case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
@@ -279,6 +259,7 @@ void MyTcpSocket::remsg()
 
         break;
     }
+
     case ENUM_MSG_TYPE_FLUSH_FRIEND_REQUEST:
     {
         qDebug() << "服务器响应刷新在线好友...";
@@ -344,6 +325,122 @@ void MyTcpSocket::remsg()
 
            MyTcpServer::getInstance().resend(friend_name, pdu);
            break;
+    }
+
+     //接受群聊请求
+    case ENUM_MSG_TYPE_GROUP_CHAT_REQUEST:
+    {
+        qDebug() << "ENUM_MSG_TYPE_CREATE_DIR_REQUEST...";
+        char login_name[32] = {'\0'};
+        memcpy(login_name, pdu->caData, 32);
+        qDebug() << login_name;
+
+        pdu->uiMsgType = ENUM_MSG_TYPE_GROUP_CHAT_RESPOND;
+        QStringList res = Database::getInstance().get_online_friends(login_name);
+
+        if(!res.isEmpty())
+        {
+            for(int i=0; i<res.size(); i++)
+            {
+                if(res.at(i) != login_name)
+                {
+                    MyTcpServer::getInstance().resend(res.at(i).toStdString().c_str(), pdu);
+                }
+            }
+        }
+        else
+        {
+            write((char*)pdu, pdu->uiPDULen);
+        }
+
+        free(pdu);
+        pdu = NULL;
+        break;
+    }
+        //接受文件夹创建请求
+    case ENUM_MSG_TYPE_CREATE_DIR_REQUEST:
+    {
+        qDebug() << "服务器接受文件夹创建请求...";
+
+        QDir dir;
+        QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
+        qDebug() << Cur_path;
+
+        char create_dir_name[32] = {'\0'};
+        memcpy(create_dir_name, pdu->caData + 32 , 32);
+
+        qDebug() << create_dir_name;
+
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_CREATE_DIR_RESPOND;
+        bool res = dir.exists(create_dir_name);
+        qDebug() << "res" << res;
+
+        if(res)
+        {
+             QString create_dir_path= create_dir_name + QString("/") + Cur_path;
+             qDebug() << "新建文件路径：" << create_dir_path;
+
+             res = dir.exists(create_dir_path);
+             if(res)
+             {
+                  strcpy(respdu->caData, FILE_NAME_EXIST);
+             }
+             else
+             {
+                 dir.mkdir(create_dir_path);
+                 strcpy(respdu->caData, CREAT_DIR_OK);
+             }
+        }
+        else
+        {
+            strcpy(respdu->caData, DIR_NO_EXIST);
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+
+        free(respdu);
+        respdu = NULL;
+        break;
+
+    }
+        //接受刷新文件请求
+    case ENUM_MSG_TYPE_FLUSH_FILE_REQUEST:
+    {
+        qDebug() << "服务器接受刷新文件请求...";
+
+        QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
+        QDir dir(Cur_path);
+        QFileInfoList FileInfoList = dir.entryInfoList();
+
+        qDebug() << Cur_path << FileInfoList;
+        PDU *respdu = mkPDU(FileInfoList.size() * sizeof(FileInfo));
+        respdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FILE_RESPOND;
+        QString file_name;
+
+        FileInfo *fileinfo = NULL;
+        for(int i=0; i<FileInfoList.size(); i++)
+        {
+            qDebug() << FileInfoList.at(i).fileName();
+
+            fileinfo = (FileInfo*)(respdu->caMsg) + i;
+            file_name = FileInfoList.at(i).fileName();
+            memcpy(fileinfo->caFileName, file_name.toStdString().c_str(), file_name.size()+1);
+
+            if(FileInfoList.at(i).isDir())
+            {
+                fileinfo->iFileType = 1;
+            }
+            else if(FileInfoList.at(i).isFile())
+            {
+                fileinfo->iFileType = 0;
+            }
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+        break;
     }
 
     default: break;

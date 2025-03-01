@@ -94,6 +94,13 @@ struct PDU
     int caMsg[];        // 实际消息
 };
 
+// 文件信息结构体
+struct FileInfo
+{
+    char caFileName[32];    // 文件名字
+    int iFileType;          // 文件类型
+};
+
 PDU *mkPDU(uint uiMsgLen);
 
 #endif // PROTOCOL_H

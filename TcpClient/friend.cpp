@@ -5,6 +5,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include "privatechat.h"
+#include "tcpclient.h"
 // 好友功能主体窗口
 Friend::Friend(QWidget *parent) : QWidget(parent)
 {
@@ -145,16 +146,25 @@ void Friend::private_chat()
 void Friend::group_chat()
 {
     QString msg = m_pInputMsgLE->text();
+    qDebug() << "点击发送信息按钮..." << msg;
 
-    if(m_pFriendListWidget != NULL)
+    if(!msg.isEmpty())
     {
-        QString login_name = TcpClient::getInstance().get_login_name();
-        //unit msg_len = msg.size() * 32;
-        PDU *pdu = mkPDU(0);
+
+            QString login_name = TcpClient::getInstance().get_login_name();
+            uint msg_len = msg.size();
+            PDU *pdu = mkPDU(msg_len);
+
+            pdu->uiMsgType = ENUM_MSG_TYPE_GROUP_CHAT_REQUEST;
+            memcpy(pdu->caData, login_name.toStdString().c_str(), login_name.size());
+            memcpy(pdu->caMsg, msg.toStdString().c_str(), msg.size());
+
+            TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+
     }
     else
     {
-        QMessageBox::information(this, "群聊消息", "无在线好友！");
+        QMessageBox::information(this, "群聊消息", "发送信息不能为空！");
     }
 }
 //展示服务器发送过来的在线用户

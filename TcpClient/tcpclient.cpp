@@ -8,6 +8,7 @@
 #include <string.h>
 #include <opewidget.h>
 #include "privatechat.h"
+#include <QDir>
 TcpClient::TcpClient(QWidget *parent) : QMainWindow(parent), ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
@@ -61,13 +62,19 @@ QTcpSocket &TcpClient:: getTcpSocket()
 //获取服务器结果
 void TcpClient::showConnect()
 {
-    QMessageBox::information(this,"连接服务器","SUCESS!!!");
+    qDebug() << "连接服务器成功！";
 }
 
 //保存用户登录名
 QString TcpClient:: get_login_name()
 {
     return this->login_name;
+}
+
+//返回用户系统当前所在路径
+QString TcpClient::get_Cur_path()
+{
+    return Cur_path;
 }
 
 //用于接受服务器的的响应函数
@@ -86,10 +93,7 @@ void TcpClient::show_information()
 
     case ENUM_MSG_TYPE_REGIST_RESPOND :
     {
-        if(pdu->uiMsgType==1)
-            QMessageBox::information(this,"注册",pdu->caData);
-        else
-            QMessageBox::information(this,"注册",pdu->caData);
+        QMessageBox::information(this,"注册",pdu->caData);
         free(pdu);
         pdu = NULL;
         break;
@@ -103,6 +107,8 @@ void TcpClient::show_information()
         }
         else
         {
+            Cur_path = QString("./%1").arg(login_name);
+
             QMessageBox::information(this,"登录",pdu->caData);
             OpeWidget::getInstance().show();
             this->hide();
@@ -256,7 +262,6 @@ void TcpClient::show_information()
     //接受好友私聊信息
     case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
     {
-       qDebug() << "接受好友私聊信息...";
        if(PrivateChat::getInstance().isHidden())
        {
            PrivateChat::getInstance().show();
@@ -268,6 +273,41 @@ void TcpClient::show_information()
        free(pdu);
        pdu = NULL;
        break;
+    }
+
+    //接受群聊信息
+    case ENUM_MSG_TYPE_GROUP_CHAT_RESPOND:
+    {
+        qDebug() << "客户端接受群聊响应...";
+
+        OpeWidget::getInstance().get_Friend()->update_Group_Msg(pdu);
+        free(pdu);
+        pdu = NULL;
+        break;
+
+    }
+
+    //接受创建目录响应
+    case ENUM_MSG_TYPE_CREATE_DIR_RESPOND:
+    {
+        qDebug() << "客户端接受创建目录响应...";
+        char msg[32] = {'\0'};
+        strncpy(msg, pdu->caData, 32);
+        qDebug() << msg;
+
+        QMessageBox::information(this,"创建文件",pdu->caData);
+        free(pdu);
+        pdu = NULL;
+        break;
+    }
+
+    //接收刷新文件响应
+    case ENUM_MSG_TYPE_FLUSH_FILE_RESPOND:
+    {
+        qDebug() << "接收刷新文件响应...";
+
+        OpeWidget::getInstance().get_Book()->update_Booklist(pdu);
+        break;
     }
     default:
     {
