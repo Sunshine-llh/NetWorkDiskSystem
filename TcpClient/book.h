@@ -30,6 +30,7 @@ signals:
 public slots:
     void Create_Dir();
     void Flush_File();
+    void Delete_Dir();
 };
 
 #endif // BOOK_H

@@ -4,6 +4,7 @@
 #include "protocol.h"
 #include "tcpclient.h"
 #include <QMessageBox>
+#include <QDir>
 Book::Book(QWidget *parent) : QWidget(parent)
 {
     m_pBookListW = new QListWidget;
@@ -37,6 +38,7 @@ Book::Book(QWidget *parent) : QWidget(parent)
      setLayout(pMain);
      connect(m_pCreateDirPB, SIGNAL(clicked(bool)), this, SLOT(Create_Dir()));
      connect(m_pFlushFilePB, SIGNAL(clicked(bool)), this, SLOT(Flush_File()));
+     connect(m_pDelDirPB, SIGNAL(clicked(bool)), this, SLOT(Delete_Dir()));
 }
 
 //点击创建文件夹按钮
@@ -87,6 +89,31 @@ void::Book::Flush_File()
     pdu = NULL;
 }
 
+//点击删除文件夹按钮
+void::Book::Delete_Dir()
+{
+    qDebug() << "点击删除文件夹按钮...";
+    QDir dir;
+    QString delete_name = m_pBookListW->currentItem()->text();
+    QString login_name = TcpClient::getInstance().get_login_name();
+    QString Cur_path =  TcpClient::getInstance().get_Cur_path();
+    qDebug() << delete_name << Cur_path + QString("/") + delete_name;
+
+    if(delete_name.isNull())
+    {
+        QMessageBox::warning(this, "文件夹删除", "请选择文件夹!");
+    }
+    else
+    {
+        PDU * pdu = mkPDU(0);
+        pdu->uiMsgType = ENUM_MSG_TYPE_DEL_DIR_REQUEST;
+
+        memcpy(pdu->caData, login_name.toStdString().c_str(), login_name.size());
+        memcpy(pdu->caData + 32, delete_name.toStdString().c_str(), delete_name.size());
+
+        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+    }
+}
 //展示服务器发送过来的目录文件列表
 void::Book::update_Booklist(const PDU *pdu)
 {
