@@ -3,6 +3,7 @@
 #include "database.h"
 #include "mytcpserver.h"
 #include <QDir>
+#include <QFileInfoList>
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
     connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
@@ -104,32 +105,6 @@ void MyTcpSocket::remsg()
         break;
     }
 
-    //下线请求
-    case ENUM_MSG_TYPE_OFFLINE_REQUEST:
-    {
-//        qDebug() << login_name;
-//        Database::getInstance().offline(login_name);
-
-//        if(rs)
-//        {
-//            free(pdu);
-//            pdu = mkPDU(0);
-//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-//            strcpy(pdu->caData,OFF_LINE_OK);
-//        }
-//        else
-//        {
-//            free(pdu);
-//            pdu = mkPDU(0);
-//            pdu->uiMsgType=ENUM_MSG_TYPE_OFFLINE_RESPOND;
-//            strcpy(pdu->caData,OFF_LINE_FAILED);
-//            login_name = "";
-//        }
-//        write((char *)pdu,pdu->uiPDULen);
-//        free(pdu);
-//        pdu=NULL;
-//        break;
-    }
 
      //响应客户端添加好友请求
      case ENUM_MSG_TYPE_ADD_FRIEND_REQUEST:
@@ -428,6 +403,44 @@ void MyTcpSocket::remsg()
         respdu = NULL;
         break;
 
+    }
+        //接受刷新文件请求
+    case ENUM_MSG_TYPE_FLUSH_FILE_REQUEST:
+    {
+        qDebug() << "服务器接受刷新文件请求...";
+
+        QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
+        QDir dir(Cur_path);
+        QFileInfoList FileInfoList = dir.entryInfoList();
+
+        qDebug() << Cur_path << FileInfoList;
+        PDU *respdu = mkPDU(FileInfoList.size() * sizeof(FileInfo));
+        respdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FILE_RESPOND;
+        QString file_name;
+
+        FileInfo *fileinfo = NULL;
+        for(int i=0; i<FileInfoList.size(); i++)
+        {
+            qDebug() << FileInfoList.at(i).fileName();
+
+            fileinfo = (FileInfo*)(respdu->caMsg) + i;
+            file_name = FileInfoList.at(i).fileName();
+            memcpy(fileinfo->caFileName, file_name.toStdString().c_str(), file_name.size()+1);
+
+            if(FileInfoList.at(i).isDir())
+            {
+                fileinfo->iFileType = 1;
+            }
+            else if(FileInfoList.at(i).isFile())
+            {
+                fileinfo->iFileType = 0;
+            }
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+        break;
     }
 
     default: break;

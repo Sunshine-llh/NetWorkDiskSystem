@@ -287,7 +287,7 @@ void TcpClient::show_information()
 
     }
 
-    //接受创建目录请求
+    //接受创建目录响应
     case ENUM_MSG_TYPE_CREATE_DIR_RESPOND:
     {
         qDebug() << "客户端接受创建目录响应...";
@@ -298,6 +298,15 @@ void TcpClient::show_information()
         QMessageBox::information(this,"创建文件",pdu->caData);
         free(pdu);
         pdu = NULL;
+        break;
+    }
+
+    //接收刷新文件响应
+    case ENUM_MSG_TYPE_FLUSH_FILE_RESPOND:
+    {
+        qDebug() << "接收刷新文件响应...";
+
+        OpeWidget::getInstance().get_Book()->update_Booklist(pdu);
         break;
     }
     default:
