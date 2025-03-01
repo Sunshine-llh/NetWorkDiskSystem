@@ -144,7 +144,7 @@ void TcpClient::show_information()
         break;
     }
 
-    //接受服务器返回的用户指定添加好友
+    //接收服务器返回的用户指定添加好友
      case ENUM_MSG_TYPE_SEARCH_USR_RESPOND:
     {
 
@@ -210,7 +210,7 @@ void TcpClient::show_information()
         break;
     }
 
-    //接受服务器返回的添加好友请求
+    //接收服务器返回的添加好友请求
       case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
     {
         qDebug() << "接受服务器返回的添加好友成功请求...";
@@ -232,7 +232,7 @@ void TcpClient::show_information()
 
     }
 
-    //接受服务器刷新的在线好友列表
+    //接收服务器刷新的在线好友列表
      case ENUM_MSG_TYPE_FLUSH_FRIEND_RESPOND:
     {
         qDebug() << "接受服务器刷新的在线好友列表...";
@@ -259,7 +259,7 @@ void TcpClient::show_information()
         break;
     }
 
-    //接受好友私聊信息
+    //接收好友私聊信息
     case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
     {
        if(PrivateChat::getInstance().isHidden())
@@ -275,7 +275,7 @@ void TcpClient::show_information()
        break;
     }
 
-    //接受群聊信息
+    //接收群聊信息
     case ENUM_MSG_TYPE_GROUP_CHAT_RESPOND:
     {
         qDebug() << "客户端接受群聊响应...";
@@ -287,7 +287,7 @@ void TcpClient::show_information()
 
     }
 
-    //接受创建目录响应
+    //接收创建目录响应
     case ENUM_MSG_TYPE_CREATE_DIR_RESPOND:
     {
         qDebug() << "客户端接受创建目录响应...";
@@ -307,6 +307,24 @@ void TcpClient::show_information()
         qDebug() << "接收刷新文件响应...";
 
         OpeWidget::getInstance().get_Book()->update_Booklist(pdu);
+        break;
+    }
+
+    //接收删除文件目录响应
+    case ENUM_MSG_TYPE_DEL_DIR_RESPOND:
+    {
+        qDebug() << "服务器接收删除文件目录响应...";
+
+        QMessageBox::information(this, "目录删除",QString("%1").arg(pdu->caData));
+        break;
+    }
+
+    //接收修改目录文件名响应
+    case ENUM_MSG_TYPE_RENAME_FILE_RESPOND:
+    {
+        qDebug() << "服务器接收修改目录文件名响应...";
+
+        QMessageBox::information(this, "重命名文件", QString("%1").arg(pdu->caData));
         break;
     }
     default:

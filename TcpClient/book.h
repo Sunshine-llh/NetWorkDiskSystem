@@ -31,6 +31,7 @@ public slots:
     void Create_Dir();
     void Flush_File();
     void Delete_Dir();
+    void Rename_Dir_File();
 };
 
 #endif // BOOK_H

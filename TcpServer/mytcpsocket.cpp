@@ -283,7 +283,7 @@ void MyTcpSocket::remsg()
         break;
 
     }
-     //接受删除好友请求
+     //接收删除好友请求
     case ENUM_MSG_TYPE_DELETE_FRIEND_REQUEST:
     {
         qDebug() << "服务器接受删除好友请求...";
@@ -316,7 +316,7 @@ void MyTcpSocket::remsg()
         break;
     }
 
-     //接受私聊请求
+     //接收私聊请求
     case ENUM_MSG_TYPE_PRIVATE_CHAT_REQUEST:
     {
            qDebug() << "服务器接受私聊请求...";
@@ -327,7 +327,7 @@ void MyTcpSocket::remsg()
            break;
     }
 
-     //接受群聊请求
+     //接收群聊请求
     case ENUM_MSG_TYPE_GROUP_CHAT_REQUEST:
     {
         qDebug() << "ENUM_MSG_TYPE_CREATE_DIR_REQUEST...";
@@ -357,7 +357,8 @@ void MyTcpSocket::remsg()
         pdu = NULL;
         break;
     }
-        //接受文件夹创建请求
+
+    //接收文件夹创建请求
     case ENUM_MSG_TYPE_CREATE_DIR_REQUEST:
     {
         qDebug() << "服务器接受文件夹创建请求...";
@@ -404,7 +405,8 @@ void MyTcpSocket::remsg()
         break;
 
     }
-        //接受刷新文件请求
+
+    //接收刷新文件请求
     case ENUM_MSG_TYPE_FLUSH_FILE_REQUEST:
     {
         qDebug() << "服务器接受刷新文件请求...";
@@ -443,6 +445,77 @@ void MyTcpSocket::remsg()
         break;
     }
 
+    //接收删除文件夹请求
+    case ENUM_MSG_TYPE_DEL_DIR_REQUEST:
+    {
+        qDebug() << "服务器接收删除文件夹请求...";
+
+        QString File_path = QString("%1/%2").arg((char*)pdu->caMsg).arg((char*)pdu->caData);
+
+        qDebug() << "文件路径：" << File_path;
+
+        QDir dir;
+        QFileInfo fileinfo(File_path);
+        bool res = false;
+
+        if(fileinfo.isDir()) res = true;
+        else res = false;
+
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_DEL_DIR_RESPOND;
+
+        if(res)
+        {
+            dir.setPath(File_path);
+            dir.removeRecursively();
+            strcpy(respdu->caData, DEL_DIR_OK);
+        }
+        else
+        {
+            strcpy(respdu->caData, DEL_DIR_FAILURED);
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+    }
+
+    //接收重命名文件夹请求
+    case ENUM_MSG_TYPE_RENAME_FILE_REQUEST:
+    {
+        qDebug() << "服务器接收重命名文件夹请求...";
+
+        char Old_name_text[32] = {'\0'};
+        char rename_text[32] = {'\0'};
+        memcpy(Old_name_text, pdu->caData, 32);
+        memcpy(rename_text, pdu->caData + 32, 32);
+        QString Old_path = QString("%1/%2").arg((char*)pdu->caMsg).arg(pdu->caData);
+        QString New_path = QString("%1/%2").arg((char*)pdu->caMsg).arg(pdu->caData + 32);
+
+        qDebug() << "重名文件名：" << Old_path << New_path << Old_name_text << rename_text;
+        QDir dir;
+
+        bool res = dir.rename(Old_path, New_path);
+
+        PDU *respdu = mkPDU(0);
+        respdu->uiMsgType = ENUM_MSG_TYPE_RENAME_FILE_RESPOND;
+        if(res)
+        {
+            strcpy(respdu->caData, RENAME_FILE_OK);
+        }
+        else
+        {
+            strcpy(respdu->caData, RENAME_FILE_FAILURED);
+        }
+
+        write((char*)respdu, pdu->uiPDULen);
+        free(respdu);
+        free(pdu);
+        respdu = NULL;
+        pdu = NULL;
+        break;
+
+    }
     default: break;
 
     }
