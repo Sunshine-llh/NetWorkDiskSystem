@@ -5,6 +5,7 @@
 #include "tcpclient.h"
 #include <QMessageBox>
 #include <QDir>
+#include "opewidget.h"
 Book::Book(QWidget *parent) : QWidget(parent)
 {
     m_pBookListW = new QListWidget;
@@ -40,10 +41,13 @@ Book::Book(QWidget *parent) : QWidget(parent)
      connect(m_pFlushFilePB, SIGNAL(clicked(bool)), this, SLOT(Flush_File()));
      connect(m_pDelDirPB, SIGNAL(clicked(bool)), this, SLOT(Delete_Dir()));
      connect(m_pRenamePB, SIGNAL(clicked(bool)), this, SLOT(Rename_Dir_File()));
+     connect(m_pBookListW, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(enterDir(QModelIndex)));
+
+     CurDir_path.clear();
 }
 
 //点击创建文件夹按钮
-void::Book::Create_Dir()
+void Book::Create_Dir()
 {
     qDebug() << "点击创建文件夹按钮...";
     QString strNewDir = QInputDialog::getText(this,"新建文件夹","新文件夹名字");
@@ -74,11 +78,11 @@ void::Book::Create_Dir()
 }
 
 //点击刷新文件按钮
-void::Book::Flush_File()
+void Book::Flush_File()
 {
     qDebug() << "点击刷新文件按钮...";
 
-    QString Cur_path = TcpClient::getInstance().get_Cur_path();
+    QString Cur_path = TcpClient::getInstance().get_Cur_path() + OpeWidget::getInstance().get_Book()->get_CurDir_path();
 
     qDebug() << Cur_path;
     PDU *pdu = mkPDU(Cur_path.size());
@@ -91,7 +95,7 @@ void::Book::Flush_File()
 }
 
 //点击删除文件夹按钮
-void::Book::Delete_Dir()
+void Book::Delete_Dir()
 {
     qDebug() << "点击删除文件夹按钮...";
     QDir dir;
@@ -115,7 +119,7 @@ void::Book::Delete_Dir()
 }
 
 //点击修改目录文件名按钮
-void::Book::Rename_Dir_File()
+void Book::Rename_Dir_File()
 {
     qDebug() << "点击修改目录文件名按钮...";
 
@@ -159,8 +163,32 @@ void::Book::Rename_Dir_File()
     }
 
 }
+
+//进入当前目录
+void Book::enterDir(const QModelIndex &index)
+{
+    QString Dir_name = index.data().toString();
+    QString Cur_path = TcpClient::getInstance().get_Cur_path();
+    QString path = Cur_path + QString("/") + Dir_name;
+
+    qDebug() << "进入当前目录..." << Dir_name << Cur_path << path;
+
+    CurDir_path = Dir_name;
+
+    qDebug() << get_CurDir_path();
+
+    PDU *pdu = mkPDU(Cur_path.size());
+    pdu->uiMsgType = ENUM_MSG_TYPE_ENTER_DIR_REQUEST;
+    memcpy(pdu->caData, Dir_name.toStdString().c_str(), Dir_name.size());
+    memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
+
+    TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+    free(pdu);
+    pdu = NULL;
+}
+
 //展示服务器发送过来的目录文件列表
-void::Book::update_Booklist(const PDU *pdu)
+void Book::update_Booklist(const PDU *pdu)
 {
     qDebug() << "展示服务器发送过来的目录文件列表...";
     if(pdu == NULL)
@@ -168,7 +196,8 @@ void::Book::update_Booklist(const PDU *pdu)
         return;
     }
 
-    //    m_pBookListW->clear();
+    m_pBookListW->clear();
+
     uint list_len = pdu->uiMsgLen / sizeof(FileInfo);
     FileInfo *fileinfo = NULL;
     for(int i=0; i< list_len ; i++)
@@ -189,4 +218,16 @@ void::Book::update_Booklist(const PDU *pdu)
         m_pBookListW->addItem(pItem);
     }
 
+}
+
+//清除当前路径
+void Book::Clear_Dir_path()
+{
+    this->CurDir_path.clear();
+}
+
+//返回当前路径
+QString Book::get_CurDir_path()
+{
+    return this->CurDir_path;
 }

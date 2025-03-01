@@ -327,6 +327,31 @@ void TcpClient::show_information()
         QMessageBox::information(this, "重命名文件", QString("%1").arg(pdu->caData));
         break;
     }
+
+    //接收进入当前文件夹响应
+    case ENUM_MSG_TYPE_ENTER_DIR_RESPOND:
+    {
+        char msg[32] ={'\0'};
+        memcpy(msg, pdu->caData, 32);
+        qDebug() << "接收进入当前文件夹响应..." << msg;
+
+        if(msg != ENTER_DIR_FAILURED)
+        {
+            OpeWidget::getInstance().get_Book()->update_Booklist(pdu);
+            QString strEnterDir = OpeWidget::getInstance().get_Book()->get_CurDir_path();
+            if(!strEnterDir.isEmpty())
+              {
+                 this->Cur_path = this->Cur_path + "/" + strEnterDir;
+              }
+            qDebug() << "strEnterDir :" << strEnterDir << "Curpath:" << Cur_path;
+        }
+        else
+        {
+            qDebug() << "双击为文件...";
+        }
+        break;
+    }
+
     default:
     {
 

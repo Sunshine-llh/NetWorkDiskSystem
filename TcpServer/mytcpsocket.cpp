@@ -516,6 +516,52 @@ void MyTcpSocket::remsg()
         break;
 
     }
+
+    //接收进入文件夹的请求
+    case ENUM_MSG_TYPE_ENTER_DIR_REQUEST:
+    {
+        qDebug() << "接收进入文件夹的请求...";
+
+        QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
+        QString Dir_name = QString("%1").arg(pdu->caData);
+
+        QString Dir_path = Cur_path + QString("/") +Dir_name;
+
+        qDebug() << "Dir_path" << Dir_path;
+        QDir dir(Dir_path);
+
+        QFileInfoList file_list = dir.entryInfoList();
+        QFileInfo fileinfo(Dir_path);
+        FileInfo *p_fileinfo =NULL;
+        PDU *respdu =mkPDU(file_list.size() * sizeof(FileInfo));
+        respdu->uiMsgType = ENUM_MSG_TYPE_ENTER_DIR_RESPOND;
+        if(fileinfo.isDir())
+        {
+            strncpy(respdu->caData, pdu->caData, 32);
+
+            for(int i=0; i<file_list.size(); i++)
+                {
+                    qDebug() << file_list.at(i);
+                    p_fileinfo = (FileInfo*)respdu->caMsg + i;
+                    memcpy(p_fileinfo->caFileName, file_list.at(i).fileName().toStdString().c_str(), file_list.at(i).fileName().size() + 1);
+
+                    if(file_list.at(i).isDir())
+                        p_fileinfo->iFileType = 1;
+                    else if(file_list.at(i).isFile())
+                        p_fileinfo->iFileType = 0;
+                }
+        }
+        else if(fileinfo.isFile())
+        {
+            strcpy(respdu->caData, ENTER_DIR_FAILURED);
+        }
+
+        write((char*)respdu, respdu->uiPDULen);
+        free(respdu);
+        respdu = NULL;
+        break;
+    }
+
     default: break;
 
     }
