@@ -601,17 +601,22 @@ void MyTcpSocket::remsg()
        }
 
        }
+
+       free(pdu);
+       pdu = NULL;
    }
    //文件读取
    else
    {
        qDebug() << "服务其正在上传文件...";
 
-       PDU * respdu = NULL;
+       PDU *respdu = NULL;
        respdu = mkPDU(0);
        respdu->uiMsgType = ENUM_MSG_TYPE_UPLOAD_FILE_RESPOND;
        QByteArray Buffer = readAll();
        file.write(Buffer);
+       qDebug() << "传输文件大小:" << Buffer.size();
+
        this->received_size += Buffer.size();
 
        if(received_size == total_size)
