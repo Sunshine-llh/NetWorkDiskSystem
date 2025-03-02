@@ -240,9 +240,10 @@ void Book::UploadFile()
         QFile file(this->Upload_File_path);
         qint64 file_size = file.size();
 
-        PDU * pdu = mkPDU(Cur_path.size());
+        PDU * pdu = mkPDU(Cur_path.size() + 1);
         pdu->uiMsgType = ENUM_MSG_TYPE_UPLOAD_FILE_REQUEST;
-        memcpy(pdu->caMsg, Upload_File_path.toStdString().c_str(), Cur_path.size());
+
+        memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
         sprintf(pdu->caData, "%s %lld", FileName.toStdString().c_str(), file_size);
 
         TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
@@ -252,7 +253,7 @@ void Book::UploadFile()
     }
     else
     {
-        QMessageBox::warning(this, "文件上传", "上传文件不能为空！");
+        QMessageBox::warning(this, "文件上传", "上传文件名不能为空！");
     }
 }
 
@@ -269,14 +270,15 @@ void Book::UploadFile_Data()
         return ;
     }
 
-    char *Buffer[4096];
+    char *Buffer = new char[4096];
     qint64 res = 0;
+
     while(true)
     {
-        res = file.read((char*)Buffer, 4096);
+        res = file.read(Buffer, 4096);
         if(res > 0 && res <= 4096)
         {
-            TcpClient::getInstance().getTcpSocket().write((char*)Buffer, res);
+            TcpClient::getInstance().getTcpSocket().write(Buffer, res);
         }
         else if(res == 0)
         {
@@ -285,11 +287,12 @@ void Book::UploadFile_Data()
         else
         {
             QMessageBox::warning(this, "文件上传", "文件上传失败！");
+            break;
         }
     }
 
     file.close();
-    delete *Buffer;
+    delete []Buffer;
     *Buffer = NULL;
 }
 //展示服务器发送过来的目录文件列表

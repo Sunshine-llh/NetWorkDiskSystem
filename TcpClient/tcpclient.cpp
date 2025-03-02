@@ -358,9 +358,15 @@ void TcpClient::show_information()
         break;
     }
 
+    //接收上传文件响应
+    case ENUM_MSG_TYPE_UPLOAD_FILE_RESPOND:
+    {
+        qDebug() << "客户端接收上传文件响应...";
+        QMessageBox::information(this, "文件上传", QString("%1").arg(pdu->caData));
+        break;
+    }
     default:
     {
-
         break;
     }
     }
