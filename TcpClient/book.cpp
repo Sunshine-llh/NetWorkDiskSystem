@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include "opewidget.h"
+#include <QFileDialog>
 Book::Book(QWidget *parent) : QWidget(parent)
 {
     m_pBookListW = new QListWidget;
@@ -44,7 +45,12 @@ Book::Book(QWidget *parent) : QWidget(parent)
      connect(m_pDelDirPB, SIGNAL(clicked(bool)), this, SLOT(Delete_Dir()));
      connect(m_pRenamePB, SIGNAL(clicked(bool)), this, SLOT(Rename_Dir_File()));
      connect(m_pBookListW, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(enterDir(QModelIndex)));
+
      connect(m_pReturnPB, SIGNAL(clicked(bool)), this, SLOT(Return()));
+
+     p_timer = new QTimer;
+     connect(m_pUploadPB, SIGNAL(clicked(bool)), this, SLOT(UploadFile()));
+     connect(p_timer, SIGNAL(timeout()), this, SLOT(UploadFile_Data()));
 }
 
 //点击创建文件夹按钮
@@ -212,6 +218,79 @@ void Book::Return()
 
     }
 
+}
+
+
+//点击上传文件请求按钮
+void Book::UploadFile()
+{
+    qDebug() << "点击上传文件按钮...";
+
+    this->Upload_File_path =  QFileDialog::getOpenFileName();
+    QString Cur_path = TcpClient::getInstance().get_Cur_path();
+
+    qDebug() << "Upload_File_path:" << this->Upload_File_path;
+
+    if(!Upload_File_path.isEmpty())
+    {
+        int index = Upload_File_path.lastIndexOf('/');
+        QString FileName = Upload_File_path.right(Upload_File_path.size() - index - 1);
+        qDebug() << "FileName:" << FileName;
+
+        QFile file(this->Upload_File_path);
+        qint64 file_size = file.size();
+
+        PDU * pdu = mkPDU(Cur_path.size());
+        pdu->uiMsgType = ENUM_MSG_TYPE_UPLOAD_FILE_REQUEST;
+        memcpy(pdu->caMsg, Upload_File_path.toStdString().c_str(), Cur_path.size());
+        sprintf(pdu->caData, "%s %lld", FileName.toStdString().c_str(), file_size);
+
+        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
+        p_timer->start(1000);
+    }
+    else
+    {
+        QMessageBox::warning(this, "文件上传", "上传文件不能为空！");
+    }
+}
+
+//上传文件数据
+void Book::UploadFile_Data()
+{
+    qDebug() << "正在上传数据...";
+    p_timer->stop();
+
+    QFile file(Upload_File_path);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(this, "文件上传", "文件打开失败！");
+        return ;
+    }
+
+    char *Buffer[4096];
+    qint64 res = 0;
+    while(true)
+    {
+        res = file.read((char*)Buffer, 4096);
+        if(res > 0 && res <= 4096)
+        {
+            TcpClient::getInstance().getTcpSocket().write((char*)Buffer, res);
+        }
+        else if(res == 0)
+        {
+            break;
+        }
+        else
+        {
+            QMessageBox::warning(this, "文件上传", "文件上传失败！");
+        }
+    }
+
+    file.close();
+    delete *Buffer;
+    *Buffer = NULL;
 }
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
