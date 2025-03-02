@@ -71,6 +71,12 @@ QString TcpClient:: get_login_name()
     return this->login_name;
 }
 
+//设置用户系统当前所在路径
+void TcpClient::set_Cur_path(QString Cur_path)
+{
+    this->Cur_path = Cur_path;
+}
+
 //返回用户系统当前所在路径
 QString TcpClient::get_Cur_path()
 {

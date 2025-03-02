@@ -20,6 +20,7 @@ public:
     QTcpSocket &getTcpSocket();
     void loadConfig();
     QString get_login_name();
+    void set_Cur_path(QString Cur_path);
     QString get_Cur_path();
 
 public slots:

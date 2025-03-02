@@ -37,13 +37,14 @@ Book::Book(QWidget *parent) : QWidget(parent)
      pMain->addItem(pDirVBL);
      pMain->addItem(pFileVBL);
      setLayout(pMain);
+
+     CurDir_path.clear();
      connect(m_pCreateDirPB, SIGNAL(clicked(bool)), this, SLOT(Create_Dir()));
      connect(m_pFlushFilePB, SIGNAL(clicked(bool)), this, SLOT(Flush_File()));
      connect(m_pDelDirPB, SIGNAL(clicked(bool)), this, SLOT(Delete_Dir()));
      connect(m_pRenamePB, SIGNAL(clicked(bool)), this, SLOT(Rename_Dir_File()));
      connect(m_pBookListW, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(enterDir(QModelIndex)));
-
-     CurDir_path.clear();
+     connect(m_pReturnPB, SIGNAL(clicked(bool)), this, SLOT(Return()));
 }
 
 //点击创建文件夹按钮
@@ -56,11 +57,12 @@ void Book::Create_Dir()
     {
         if(strNewDir.size() < 32)
         {
-            PDU *pdu = mkPDU(strNewDir.size());
+            PDU *pdu = mkPDU(TcpClient::getInstance().get_Cur_path().size());
+
             pdu->uiMsgType = ENUM_MSG_TYPE_CREATE_DIR_REQUEST;
             strncpy(pdu->caData, TcpClient::getInstance().get_login_name().toStdString().c_str(), TcpClient::getInstance().get_login_name().size());
-            strncpy(pdu->caData + 32, TcpClient::getInstance().get_Cur_path().toStdString().c_str(), TcpClient::getInstance().get_Cur_path().size());
-            memcpy(pdu->caMsg, strNewDir.toStdString().c_str(), strNewDir.size());
+            strncpy(pdu->caData + 32, strNewDir.toStdString().c_str(), strNewDir.size());
+            memcpy(pdu->caMsg, TcpClient::getInstance().get_Cur_path().toStdString().c_str(), TcpClient::getInstance().get_Cur_path().size());
 
             TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
             free(pdu);
@@ -82,9 +84,10 @@ void Book::Flush_File()
 {
     qDebug() << "点击刷新文件按钮...";
 
-    QString Cur_path = TcpClient::getInstance().get_Cur_path() + OpeWidget::getInstance().get_Book()->get_CurDir_path();
+    QString Cur_path = TcpClient::getInstance().get_Cur_path();
 
-    qDebug() << Cur_path;
+    qDebug() << "Cur_path:" << Cur_path;
+
     PDU *pdu = mkPDU(Cur_path.size());
     pdu->uiMsgType = ENUM_MSG_TYPE_FLUSH_FILE_REQUEST;
     memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
@@ -187,6 +190,29 @@ void Book::enterDir(const QModelIndex &index)
     pdu = NULL;
 }
 
+//点击返回按钮
+void Book::Return()
+{
+    qDebug() << "点击返回按钮...";
+    QString Cur_path = TcpClient::getInstance().get_Cur_path();
+    QString Root_path = QString("./") + TcpClient::getInstance().get_login_name();
+    qDebug() << "Cur_path:" << Cur_path << "Root_path:" << Root_path;
+
+    if(Cur_path == Root_path)
+    {
+        QMessageBox::information(this, "返回上一级", "当前已为根目录！");
+    }
+    else
+    {
+        int index = Cur_path.lastIndexOf("/");
+        QString New_Cur_path = Cur_path.remove(index, Cur_path.size() - index);
+        TcpClient::getInstance().set_Cur_path(New_Cur_path);
+        CurDir_path.clear();
+        Flush_File();
+
+    }
+
+}
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
