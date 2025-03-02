@@ -365,21 +365,24 @@ void MyTcpSocket::remsg()
 
         QDir dir;
         QString Cur_path = QString("%1").arg((char*)pdu->caMsg);
-        qDebug() << Cur_path;
+        qDebug() << "Cur_path:" << Cur_path;
 
         char create_dir_name[32] = {'\0'};
         memcpy(create_dir_name, pdu->caData + 32 , 32);
 
-        qDebug() << create_dir_name;
+        qDebug() << "create_dir_name:" << create_dir_name;
 
         PDU *respdu = mkPDU(0);
         respdu->uiMsgType = ENUM_MSG_TYPE_CREATE_DIR_RESPOND;
-        bool res = dir.exists(create_dir_name);
+
+        bool res = dir.exists(Cur_path);
+
         qDebug() << "res" << res;
 
         if(res)
         {
-             QString create_dir_path= create_dir_name + QString("/") + Cur_path;
+             QString create_dir_path= Cur_path + QString("/") + create_dir_name;
+
              qDebug() << "新建文件路径：" << create_dir_path;
 
              res = dir.exists(create_dir_path);
