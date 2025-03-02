@@ -127,7 +127,9 @@ void Friend::delete_friend()
 //点击私聊按钮
 void Friend::private_chat()
 {
-    if(m_pFriendListWidget != NULL)
+    qDebug() << "点击私聊按钮..." << m_pFriendListWidget->size();
+
+    if(m_pFriendListWidget->currentItem() != NULL)
     {
         QString chat_name = m_pFriendListWidget->currentItem()->text();
         PrivateChat::getInstance().save_chat_name(chat_name.toStdString().c_str());
