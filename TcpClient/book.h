@@ -7,7 +7,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <protocol.h>
-#include <QTime>
+#include <QTimer>
 class Book : public QWidget
 {
     Q_OBJECT
@@ -31,7 +31,7 @@ private:
     QPushButton *m_pShareFilePB;
     QString  CurDir_path;
     QString Upload_File_path;
-    QTime *time;
+    QTimer *p_timer;
 
 
 signals:
