@@ -44,6 +44,7 @@ public slots:
     void  Return();
     void UploadFile();
     void UploadFile_Data();
+    void Del_File();
 };
 
 #endif // BOOK_H

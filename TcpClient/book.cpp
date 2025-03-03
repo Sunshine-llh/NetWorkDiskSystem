@@ -51,6 +51,7 @@ Book::Book(QWidget *parent) : QWidget(parent)
      p_timer = new QTimer;
      connect(m_pUploadPB, SIGNAL(clicked(bool)), this, SLOT(UploadFile()));
      connect(p_timer, SIGNAL(timeout()), this, SLOT(UploadFile_Data()));
+     connect(m_pDelFilePB, SIGNAL(clicked(bool)), this, SLOT(Del_File()));
 }
 
 //点击创建文件夹按钮
@@ -217,9 +218,7 @@ void Book::Return()
         Flush_File();
 
     }
-
 }
-
 
 //点击上传文件请求按钮
 void Book::UploadFile()
@@ -295,6 +294,33 @@ void Book::UploadFile_Data()
     delete []Buffer;
     *Buffer = NULL;
 }
+
+//点击删除文件按钮
+void Book::Del_File()
+{
+    qDebug() << "点击删除文件按钮...";
+    QString File_name = m_pBookListW->currentItem()->text();
+    qDebug() << "File_name:" << File_name;
+
+    if(File_name.isEmpty())
+    {
+        QMessageBox::warning(this, "删除文件", "请选择您要删除的文件！");
+    }
+    else
+    {
+        QString Cur_path = TcpClient::getInstance().get_Cur_path();
+        PDU *pdu = mkPDU(Cur_path.size() + 1);
+        pdu->uiMsgType = ENUM_MSG_TYPE_DEL_FILE_REQUEST;
+        memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
+        memcpy(pdu->caData, File_name.toStdString().c_str(), File_name.size() + 1);
+
+        qDebug() << "Cur_path:" << Cur_path;
+
+        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
+    }
+}
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
@@ -331,7 +357,7 @@ void Book::update_Booklist(const PDU *pdu)
 //清除当前路径
 void Book::Clear_Dir_path()
 {
-    this->CurDir_path.clear();
+    this->CurDir_path.clear();    
 }
 
 //返回当前路径

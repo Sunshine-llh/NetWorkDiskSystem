@@ -595,6 +595,32 @@ void MyTcpSocket::remsg()
            break;
        }
 
+       //接收删除文件的请求
+       case ENUM_MSG_TYPE_DEL_FILE_REQUEST:
+       {
+           qDebug() << "服务器接收删除文件请求...";
+           QString File_path = QString("%1/%2").arg((char*)pdu->caMsg).arg(pdu->caData);
+           qDebug() << "File_path:" << File_path;
+
+           QFileInfo file(File_path);
+           PDU *respdu = mkPDU(0);
+           respdu->uiMsgType = ENUM_MSG_TYPE_DEL_FILE_RESPOND;
+
+           if(file.isDir())
+           {
+               strcpy(respdu->caData, DEL_FILE_FAILURED);
+           }
+           else if(file.isFile())
+           {
+               QDir dir;
+               dir.remove(File_path);
+               strcpy (respdu->caData, DEL_FILE_OK);
+           }
+
+           write((char*)respdu, respdu->uiPDULen);
+           free(respdu);
+           respdu = NULL;
+       }
        default:
        {
            break;

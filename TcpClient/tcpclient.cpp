@@ -365,10 +365,19 @@ void TcpClient::show_information()
         QMessageBox::information(this, "文件上传", pdu->caData);
         break;
     }
+
+    //接收文件删除响应
+    case ENUM_MSG_TYPE_DEL_FILE_RESPOND:
+    {
+        qDebug() << "客户端接收文件删除响应...";
+        QMessageBox::information(this, "文件删除", pdu->caData);
+    }
     default:
     {
         break;
     }
+        free(pdu);
+        pdu = NULL;
     }
 }
 
