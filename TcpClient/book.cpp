@@ -299,28 +299,30 @@ void Book::UploadFile_Data()
 void Book::Del_File()
 {
     qDebug() << "点击删除文件按钮...";
-    QString File_name = m_pBookListW->currentItem()->text();
-    qDebug() << "File_name:" << File_name;
+    QListWidgetItem *pItem = m_pBookListW->currentItem();
 
-    if(File_name.isEmpty())
+    if(pItem == NULL)
     {
         QMessageBox::warning(this, "删除文件", "请选择您要删除的文件！");
     }
     else
     {
+        QString File_name = pItem->text();
         QString Cur_path = TcpClient::getInstance().get_Cur_path();
         PDU *pdu = mkPDU(Cur_path.size() + 1);
         pdu->uiMsgType = ENUM_MSG_TYPE_DEL_FILE_REQUEST;
         memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
         memcpy(pdu->caData, File_name.toStdString().c_str(), File_name.size() + 1);
 
-        qDebug() << "Cur_path:" << Cur_path;
+        qDebug()  << "File_name:" << File_name << "Cur_path:" << Cur_path;
 
         TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
         free(pdu);
         pdu = NULL;
     }
 }
+
+//
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
