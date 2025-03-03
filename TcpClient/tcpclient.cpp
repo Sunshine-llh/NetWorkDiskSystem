@@ -217,7 +217,7 @@ void TcpClient::show_information()
     }
 
     //接收服务器返回的添加好友请求
-      case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
+    case ENUM_MSG_TYPE_ADD_FRIEND_AGGREE:
     {
         qDebug() << "接受服务器返回的添加好友成功请求...";
         char friend_name[32] = {'\0'};
@@ -226,7 +226,7 @@ void TcpClient::show_information()
         break;
 
     }
-     case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
+    case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
     {
        qDebug() << "接受服务器返回的添加好友失败请求...";
        char friend_name[32] = {'\0'};
@@ -362,7 +362,7 @@ void TcpClient::show_information()
     case ENUM_MSG_TYPE_UPLOAD_FILE_RESPOND:
     {
         qDebug() << "客户端接收上传文件响应...";
-        QMessageBox::information(this, "文件上传", "文件上传成功！");
+        QMessageBox::information(this, "文件上传", pdu->caData);
         break;
     }
     default:
@@ -384,17 +384,18 @@ void TcpClient::on_login_pb_clicked()
     {
         QMessageBox::warning(this,"提示","用户名密码不为空！");
     }
+    else
+    {
+        this->login_name = username;
 
-    this->login_name = username;
-
-    PDU *pdu=mkPDU(0);
-    pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_REQUEST;
-    memcpy(pdu->caData,username.toStdString().c_str(),32);
-    memcpy(pdu->caData+32,password.toStdString().c_str(),32);
-    m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
-    free(pdu);
-    pdu = NULL;
-
+        PDU *pdu=mkPDU(0);
+        pdu->uiMsgType=ENUM_MSG_TYPE_LOGIN_REQUEST;
+        memcpy(pdu->caData,username.toStdString().c_str(),32);
+        memcpy(pdu->caData+32,password.toStdString().c_str(),32);
+        m_tcpScoket.write((char*)pdu,pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
+    }
 }
 
 //注册按钮
