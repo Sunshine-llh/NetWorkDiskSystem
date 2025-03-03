@@ -16,6 +16,12 @@ public:
     void update_Booklist(const PDU *pdu);
     void Clear_Dir_path();
     QString get_CurDir_path();
+    void set_Save_path(QString Save_path);
+    QString get_Save_path();
+    bool get_Uploead_statu();
+    void set_Upload_statu(bool Upload_statu);
+    qint64 total_size;
+    qint64 received_size;
 
 
 private:
@@ -32,6 +38,8 @@ private:
     QString  CurDir_path;
     QString Upload_File_path;
     QTimer *p_timer;
+    QString Save_path;
+    bool Uploead_statu;
 
 
 signals:
@@ -45,6 +53,7 @@ public slots:
     void UploadFile();
     void UploadFile_Data();
     void Del_File();
+    void Download_File();
 };
 
 #endif // BOOK_H

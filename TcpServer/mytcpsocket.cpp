@@ -10,6 +10,8 @@ MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
     connect(this,&QTcpSocket::disconnected,this,&MyTcpSocket::disconnected);
 
     this->upload_flag = false;
+    m_pTimer = new QTimer;
+    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(send_File_to_Client()));
 }
 
 //用户返回请求用户的用户名
@@ -31,6 +33,39 @@ void MyTcpSocket::offline(MyTcpSocket *mytcpsoket)
 
 }
 
+//向客户端发送文件数据
+void MyTcpSocket::send_File_to_Client()
+{
+    qDebug() << "向客户端发送文件数据...";
+    this->m_pTimer->stop();
+
+    char *Buffer =new char[4096];
+    qint64 res = 0;
+
+    while(true)
+    {
+        res = file.read(Buffer, 4096);
+
+        if(res > 0 && res <= 4096)
+        {
+            write(Buffer, res);
+        }
+        else if(res == 0)
+        {
+            file.close();
+            break;
+        }
+        else
+        {
+           qDebug() << "正在向客户端发送文件数据...";
+           file.close();
+           break;
+        }
+    }
+
+    delete []Buffer;
+
+}
 // 接收来自客户端的消息
 void MyTcpSocket::remsg()
 {
@@ -618,6 +653,40 @@ void MyTcpSocket::remsg()
            }
 
            write((char*)respdu, respdu->uiPDULen);
+           free(respdu);
+           respdu = NULL;
+       }
+
+       //接收文件下载的请求
+       case ENUM_MSG_TYPE_DOWNLOAD_FILE_REQUEST:
+       {
+           qDebug() << "服务器接收文件下载请求...";
+           char File_name[32] = {'\0'};
+           strcpy(File_name, pdu->caData);
+           QString Upload_path = QString("%1/%2").arg((char*)pdu->caMsg).arg((char*)pdu->caData);
+
+           qDebug() << "File_name:" << File_name << "Upload_path:" << Upload_path;
+
+           QFileInfo fileinfo(Upload_path);
+
+           PDU *respdu = mkPDU(0);
+           respdu->uiMsgType = ENUM_MSG_TYPE_DOWNLOAD_FILE_RESPOND;
+           if(fileinfo.isDir())
+           {
+               qDebug() << "目录存在！";
+               strcpy(pdu->caData, UPLOAD_FILE_FAILURED);
+           }
+           else if(fileinfo.isFile())
+           {
+               qDebug() << "文件存在！";
+               sprintf(pdu->caData, "%s %lld", File_name, fileinfo.size());
+               this->file.setFileName(Upload_path);
+               this->file.open(QIODevice::ReadOnly);
+           }
+
+
+           write((char*)respdu, respdu->uiPDULen);
+           this->m_pTimer->start(1000);
            free(respdu);
            respdu = NULL;
        }

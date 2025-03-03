@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include <database.h>
 #include <QFile>
+#include <QTimer>
 class MyTcpSocket : public QTcpSocket
 {
 private:
@@ -15,13 +16,14 @@ private:
     qint64 total_size;
     qint64 received_size;
     bool upload_flag;
-
+    QTimer *m_pTimer;
 public:
     explicit MyTcpSocket(QObject *parent = nullptr);
     QString get_login_name();
 public slots:
     void remsg();
     void disconnected();
+    void send_File_to_Client();
 signals:
     void offline(MyTcpSocket *mysocket);
 };

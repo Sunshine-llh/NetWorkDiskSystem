@@ -49,9 +49,12 @@ Book::Book(QWidget *parent) : QWidget(parent)
      connect(m_pReturnPB, SIGNAL(clicked(bool)), this, SLOT(Return()));
 
      p_timer = new QTimer;
+     this->Uploead_statu = false;
+
      connect(m_pUploadPB, SIGNAL(clicked(bool)), this, SLOT(UploadFile()));
      connect(p_timer, SIGNAL(timeout()), this, SLOT(UploadFile_Data()));
      connect(m_pDelFilePB, SIGNAL(clicked(bool)), this, SLOT(Del_File()));
+     connect(m_DownLoadPB, SIGNAL(clicked(bool)), this, SLOT(Download_File()));
 }
 
 //点击创建文件夹按钮
@@ -322,7 +325,46 @@ void Book::Del_File()
     }
 }
 
-//
+//点击文件下载按钮
+void Book::Download_File()
+{
+    qDebug() << "点击文件下载按钮...";
+    QListWidgetItem *pItem = m_pBookListW->currentItem();
+    if(pItem == NULL)
+    {
+        QMessageBox::warning(this, "文件下载", "请选择要下载的文件！");
+    }
+    else
+    {
+        QString Save_path = QFileDialog::getSaveFileName();
+        qDebug() << "Save_path:" << Save_path;
+
+        if(Save_path.isEmpty())
+        {
+            QMessageBox::information(this, "文件下载", "请选择文件保存的路径！");
+            this->Save_path.clear();
+        }
+        else
+        {
+            this->Save_path = Save_path;
+
+            QString Cur_path = TcpClient::getInstance().get_Cur_path();
+            QString File_name = pItem->text();
+
+            qDebug() << "File_name:" << File_name << "Cur_path:" << Cur_path << "Save_path:" << Save_path;
+            PDU *pdu = mkPDU(Save_path.size() + 1);
+            pdu->uiMsgType = ENUM_MSG_TYPE_DOWNLOAD_FILE_REQUEST;
+
+            strcpy(pdu->caData, File_name.toStdString().c_str());
+            memcpy(pdu->caMsg, Cur_path.toStdString().c_str(), Cur_path.size());
+
+            TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+            free(pdu);
+            pdu = NULL;
+        }
+    }
+
+}
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
@@ -366,4 +408,28 @@ void Book::Clear_Dir_path()
 QString Book::get_CurDir_path()
 {
     return this->CurDir_path;
+}
+
+//设置文件保存路径
+void Book::set_Save_path(QString Save_path)
+{
+    this->Save_path = Save_path;
+}
+
+//返回文件保存路径
+QString Book::get_Save_path()
+{
+    return this->Save_path;
+}
+
+//返回文件下载状态
+bool Book::get_Uploead_statu()
+{
+    return this->Uploead_statu;
+}
+
+//设置文件下载状态
+void Book::set_Upload_statu(bool Upload_statu)
+{
+    this->Uploead_statu =Upload_statu;
 }

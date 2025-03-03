@@ -22,6 +22,7 @@ public:
     QString get_login_name();
     void set_Cur_path(QString Cur_path);
     QString get_Cur_path();
+    QFile file;
 
 public slots:
     void showConnect();
