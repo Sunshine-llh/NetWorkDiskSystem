@@ -6,11 +6,11 @@
 #include <QFileInfoList>
 MyTcpSocket::MyTcpSocket(QObject *parent) : QTcpSocket(parent)
 {
+    m_pTimer = new QTimer;
     connect(this,&QTcpSocket::readyRead,this,&MyTcpSocket::remsg);
     connect(this,&QTcpSocket::disconnected,this,&MyTcpSocket::disconnected);
 
     this->upload_flag = false;
-    m_pTimer = new QTimer;
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(send_File_to_Client()));
 }
 
@@ -37,7 +37,6 @@ void MyTcpSocket::offline(MyTcpSocket *mytcpsoket)
 void MyTcpSocket::send_File_to_Client()
 {
     qDebug() << "向客户端发送文件数据...";
-    this->m_pTimer->stop();
 
     char *Buffer =new char[4096];
     qint64 res = 0;
@@ -679,16 +678,20 @@ void MyTcpSocket::remsg()
            else if(fileinfo.isFile())
            {
                qDebug() << "文件存在！";
-               sprintf(pdu->caData, "%s %lld", File_name, fileinfo.size());
+               sprintf(respdu->caData, "%s %lld", File_name, fileinfo.size());
+
+               qDebug() << respdu->caData;
+               write((char*)respdu, respdu->uiPDULen);
+               free(respdu);
+               respdu = NULL;
                this->file.setFileName(Upload_path);
                this->file.open(QIODevice::ReadOnly);
+               m_pTimer->start(1000);
+
+               qDebug() << "File:" << file;
            }
 
-
-           write((char*)respdu, respdu->uiPDULen);
-           this->m_pTimer->start(1000);
-           free(respdu);
-           respdu = NULL;
+           break;
        }
        default:
        {

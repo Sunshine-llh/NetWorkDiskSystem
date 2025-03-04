@@ -381,10 +381,11 @@ void TcpClient::show_information()
        {
            qDebug() << pdu->caData;
            qDebug() << "客户端接收文件下载响应...";
+
            char File_name[32] = {'\0'};
            sscanf(pdu->caData, "%s %lld", File_name, &(OpeWidget::getInstance().get_Book()->total_size));
 
-           qDebug() << "File_name:" << File_name;
+           qDebug() << "File_name:" << File_name << "file_size:" << OpeWidget::getInstance().get_Book()->total_size;
 
            if(strlen(File_name) > 0 && OpeWidget::getInstance().get_Book()->total_size >0)
            {
@@ -420,6 +421,9 @@ void TcpClient::show_information()
         file.write(Buffer);
         Book *book = OpeWidget::getInstance().get_Book();
         book->received_size += Buffer.size();
+
+        qDebug() << "Buffer_size:" << Buffer.size() << "Book:" << book->total_size << book->received_size;
+
         if(book->total_size == book->received_size)
         {
              file.close();
