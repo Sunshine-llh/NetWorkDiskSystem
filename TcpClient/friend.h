@@ -20,7 +20,7 @@ public:
     void showAllOnlineUsr(PDU *pdu);
     void update_Online_FriendList(PDU *pdu);
     void update_Group_Msg(PDU *pdu);
-
+    QListWidget *getfrind_list();
 signals:
 
 public slots:

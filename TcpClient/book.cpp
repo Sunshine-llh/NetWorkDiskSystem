@@ -367,6 +367,35 @@ void Book::Download_File()
 
 }
 
+//点击文件分享按钮
+void Book:: Share_File()
+{
+    qDebug() << "点击文件分享按钮...";
+    QListWidgetItem *Item = m_pBookListW->currentItem();
+
+    if(Item == NULL)
+    {
+        QMessageBox::warning(this, "文件分享", "请选择分享文件！");
+        return;
+    }
+    else
+    {
+        this->File_name = Item->text();
+        qDebug() << "File_name:" << File_name;
+    }
+
+    QListWidget *friend_list = OpeWidget::getInstance().get_Friend()->getfrind_list();
+    qDebug() << "friend_list_size:" << friend_list->size();
+
+    ShareFile::getInstance().update_friendslist(friend_list);
+
+    if(ShareFile::getInstance().isHidden())
+    {
+         ShareFile::getInstance().show();
+    }
+
+}
+
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
@@ -418,26 +447,6 @@ void Book::set_Save_path(QString Save_path)
     this->Save_path = Save_path;
 }
 
-//点击文件分享按钮
-void Book:: Share_File()
-{
-    qDebug() << "点击文件分享按钮...";
-    QListWidgetItem *Item = m_pBookListW->currentItem();
-
-    if(Item == NULL)
-    {
-        QMessageBox::warning(this, "文件分享", "请选择分享文件！");
-        return;
-    }
-    else
-    {
-        this->File_name = Item->text();
-        qDebug() << "File_name:" << File_name;
-    }
-
-    ShareFile::getInstance().show();
-
-}
 //返回文件保存路径
 QString Book::get_Save_path()
 {

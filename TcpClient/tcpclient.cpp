@@ -229,6 +229,7 @@ void TcpClient::show_information()
            break;
 
        }
+
        case ENUM_MSG_TYPE_ADD_FRIEND_REFUSE:
        {
           qDebug() << "接受服务器返回的添加好友失败请求...";

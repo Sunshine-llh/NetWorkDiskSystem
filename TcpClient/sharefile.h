@@ -27,6 +27,11 @@ private:
     QWidget *m_pFriendW;
     QVBoxLayout *m_pFriendWVBL;
     QButtonGroup *m_pButtonGroup;
+public slots:
+    void Selected_All();
+    void Cancel_Selected();
+    void Sure_Ok();
+    void Cancel();
 
 };
 

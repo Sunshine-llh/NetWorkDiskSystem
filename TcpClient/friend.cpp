@@ -54,7 +54,7 @@ Friend::Friend(QWidget *parent) : QWidget(parent)
 // 在线用户请求
 void Friend::showOnline()
 {
-    qDebug() << "showOnline";
+    qDebug() << "showOnline...";
     if(m_pOnline->isHidden())
     {
        //向服务端发送请求
@@ -203,4 +203,11 @@ void Friend::update_Group_Msg(PDU *pdu)
 
     m_pShowMsgTE->append(msg);
 
+}
+
+//返回在线好友信息
+QListWidget *Friend::getfrind_list()
+{
+    qDebug() << "返回在线好友信息..." << m_pFriendListWidget;
+    return m_pFriendListWidget;
 }
