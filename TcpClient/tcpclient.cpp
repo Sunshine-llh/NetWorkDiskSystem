@@ -406,6 +406,24 @@ void TcpClient::show_information()
 
        }
 
+       //客户端接收好友文件共享
+       case ENUM_MSG_TYPE_SHARE_FILE_REQUEST:
+       {
+           qDebug() << "客户端接收好友文件共享...";
+           char friend_name[32] = {'\0'};
+           char *File_path = new char[pdu->uiMsgLen];
+           memcpy(File_path, pdu->caMsg, pdu->uiMsgLen);
+           strcpy(friend_name, pdu->caData);
+
+           qDebug() << "friend_name：" << friend_name << "File_path:" << File_path;
+
+           QString msg = QString("friend:\'%1\'want to share File").arg(friend_name);
+
+           int res = QMessageBox::question(this, "文件分享", msg);
+           qDebug() << "msg:" << msg << "res:" << res;
+
+
+       }
        default:
        {
            break;

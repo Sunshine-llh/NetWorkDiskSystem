@@ -693,6 +693,52 @@ void MyTcpSocket::remsg()
 
            break;
        }
+
+       //接收文件分享的请求
+       case ENUM_MSG_TYPE_SHARE_FILE_REQUEST:
+       {
+           qDebug() << "服务器接收文件分享的请求...";
+           char login_name[32] = {'\0'};
+           int share_num;
+           sscanf(pdu->caData, "%s %d", login_name, &share_num);
+           qDebug() << "login_name1:" << login_name << "share_num:" << share_num;
+
+           sscanf(pdu->caData, "%s%d", login_name, &share_num);
+           qDebug() << "login_name2:" << login_name << "share_num:" << share_num;
+
+           QString File_path = QString("%1").arg((char*)(pdu->caMsg) + share_num * 32);
+
+           qDebug() << "File_path:" << File_path;
+
+           char send_name[32] = {'\0'};
+           PDU *respdu = mkPDU(pdu->uiPDULen - share_num * 32);
+           respdu->uiMsgType = ENUM_MSG_TYPE_SHARE_FILE_REQUEST;
+           strcpy(respdu->caData, login_name);
+           memcpy(respdu->caMsg, (char*)pdu->caMsg + share_num * 32, pdu->uiMsgLen - share_num * 32);
+
+           for(int i=0;i<share_num;i++)
+           {
+                memcpy(send_name, (char*)(pdu->caMsg) + i * 32, 32);
+
+                qDebug() << "send_name1:" << send_name;
+                memcpy(send_name, (char*)pdu->caMsg + i * 32, 32);
+                qDebug() << "send_name2:" << send_name;
+
+                MyTcpServer::getInstance().resend(send_name, respdu);
+           }
+           free(respdu);
+           respdu = NULL;
+           break;
+
+       }
+
+       //接收文件分享的响应
+       case ENUM_MSG_TYPE_SHARE_FILE_RESPOND:
+       {
+           qDebug() << "接收客户端是否同意文件分享...";
+
+
+       }
        default:
        {
            break;

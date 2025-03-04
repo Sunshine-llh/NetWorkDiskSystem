@@ -8,7 +8,7 @@
 #include <QVBoxLayout>
 #include <protocol.h>
 #include <QTimer>
-#include "sharefile.h"
+
 class Book : public QWidget
 {
     Q_OBJECT
@@ -21,6 +21,7 @@ public:
     QString get_Save_path();
     bool get_Uploead_statu();
     void set_Upload_statu(bool Upload_statu);
+    QString get_File_name();
     qint64 total_size;
     qint64 received_size;
 

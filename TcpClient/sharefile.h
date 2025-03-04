@@ -9,7 +9,9 @@
 #include <QScrollArea>
 #include <QCheckBox>
 #include <QListWidget>
-
+#include <QMessageBox>
+#include <tcpclient.h>
+#include "protocol.h"
 class ShareFile : public QWidget
 {
     Q_OBJECT

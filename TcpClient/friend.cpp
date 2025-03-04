@@ -169,6 +169,7 @@ void Friend::group_chat()
         QMessageBox::information(this, "群聊消息", "发送信息不能为空！");
     }
 }
+
 //展示服务器发送过来的在线用户
 void Friend::showAllOnlineUsr(PDU *pdu)
 {

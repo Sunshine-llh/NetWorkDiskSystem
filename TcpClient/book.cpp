@@ -7,6 +7,7 @@
 #include <QDir>
 #include "opewidget.h"
 #include <QFileDialog>
+#include "sharefile.h"
 Book::Book(QWidget *parent) : QWidget(parent)
 {
     m_pBookListW = new QListWidget;
@@ -463,4 +464,10 @@ bool Book::get_Uploead_statu()
 void Book::set_Upload_statu(bool Upload_statu)
 {
     this->Uploead_statu =Upload_statu;
+}
+
+//返回分享文件名
+QString Book::get_File_name()
+{
+    return this->File_name;
 }
