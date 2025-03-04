@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <protocol.h>
 #include <QTimer>
+#include "sharefile.h"
 class Book : public QWidget
 {
     Q_OBJECT
@@ -40,6 +41,7 @@ private:
     QTimer *p_timer;
     QString Save_path;
     bool Uploead_statu;
+    QString File_name;
 
 
 signals:
@@ -54,6 +56,7 @@ public slots:
     void UploadFile_Data();
     void Del_File();
     void Download_File();
+    void Share_File();
 };
 
 #endif // BOOK_H

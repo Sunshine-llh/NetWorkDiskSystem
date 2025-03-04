@@ -55,6 +55,7 @@ Book::Book(QWidget *parent) : QWidget(parent)
      connect(p_timer, SIGNAL(timeout()), this, SLOT(UploadFile_Data()));
      connect(m_pDelFilePB, SIGNAL(clicked(bool)), this, SLOT(Del_File()));
      connect(m_DownLoadPB, SIGNAL(clicked(bool)), this, SLOT(Download_File()));
+     connect(m_pShareFilePB, SIGNAL(clicked(bool)), this, SLOT(Share_File()));
 }
 
 //点击创建文件夹按钮
@@ -365,6 +366,7 @@ void Book::Download_File()
     }
 
 }
+
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {
@@ -416,6 +418,26 @@ void Book::set_Save_path(QString Save_path)
     this->Save_path = Save_path;
 }
 
+//点击文件分享按钮
+void Book:: Share_File()
+{
+    qDebug() << "点击文件分享按钮...";
+    QListWidgetItem *Item = m_pBookListW->currentItem();
+
+    if(Item == NULL)
+    {
+        QMessageBox::warning(this, "文件分享", "请选择分享文件！");
+        return;
+    }
+    else
+    {
+        this->File_name = Item->text();
+        qDebug() << "File_name:" << File_name;
+    }
+
+    ShareFile::getInstance().show();
+
+}
 //返回文件保存路径
 QString Book::get_Save_path()
 {
