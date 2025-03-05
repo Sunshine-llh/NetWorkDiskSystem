@@ -29,10 +29,15 @@ Book::Book(QWidget *parent) : QWidget(parent)
      m_DownLoadPB = new QPushButton("下载文件");
      m_pDelFilePB = new QPushButton("删除文件");
      m_pShareFilePB = new QPushButton("分享文件");
+     m_pMvFilePB = new QPushButton("移动文件");
+     m_Mv_PathFilePB = new QPushButton("目标目录");
      pFileVBL->addWidget(m_pUploadPB);
      pFileVBL->addWidget(m_DownLoadPB);
      pFileVBL->addWidget(m_pDelFilePB);
      pFileVBL->addWidget(m_pShareFilePB);
+     pFileVBL->addWidget(m_pMvFilePB);
+     pFileVBL->addWidget(m_Mv_PathFilePB);
+     m_Mv_PathFilePB->setEnabled(false);
 
      QHBoxLayout *pMain = new QHBoxLayout();
      pMain->addWidget(m_pBookListW);
@@ -57,6 +62,8 @@ Book::Book(QWidget *parent) : QWidget(parent)
      connect(m_pDelFilePB, SIGNAL(clicked(bool)), this, SLOT(Del_File()));
      connect(m_DownLoadPB, SIGNAL(clicked(bool)), this, SLOT(Download_File()));
      connect(m_pShareFilePB, SIGNAL(clicked(bool)), this, SLOT(Share_File()));
+     connect(m_pMvFilePB, SIGNAL(clicked(bool)), this, SLOT(Mv_File()));
+     connect(m_Mv_PathFilePB, SIGNAL(clicked(bool)), this, SLOT(Selected_Dir_path()));
 }
 
 //点击创建文件夹按钮
@@ -397,6 +404,20 @@ void Book:: Share_File()
 
 }
 
+
+//点击移动文件按钮
+void Book::Mv_File()
+{
+    qDebug() << "点击移动文件按钮...";
+}
+
+//选择目标目录按钮
+void Book::Selected_Dir_path()
+{
+    qDebug() << "点击目标目录按钮...";
+
+
+}
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {

@@ -37,6 +37,9 @@ private:
     QPushButton *m_DownLoadPB;
     QPushButton *m_pDelFilePB;
     QPushButton *m_pShareFilePB;
+    QPushButton *m_pMvFilePB;
+    QPushButton *m_Mv_PathFilePB;
+
     QString  CurDir_path;
     QString Upload_File_path;
     QTimer *p_timer;
@@ -58,6 +61,8 @@ public slots:
     void Del_File();
     void Download_File();
     void Share_File();
+    void Mv_File();
+    void Selected_Dir_path();
 };
 
 #endif // BOOK_H
