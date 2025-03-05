@@ -33,12 +33,6 @@ void MyTcpSocket::Copy_Dir_File(QString strpath, QString despath)
     QString str_path;
     QString des_path;
 
-    if(file.size() == 0)
-    {
-        QFile::copy(str_path, des_path);
-    }
-    else
-    {
         for(int i=0;i<file_list.size();i++)
         {
             qDebug() << file_list[i].fileName() << file_list[i].filePath();
@@ -46,7 +40,8 @@ void MyTcpSocket::Copy_Dir_File(QString strpath, QString despath)
             if(file_list[i].isFile())
             {
                 str_path = strpath + QString("/") + file_list[i].fileName();
-                des_path =  des_path + QString("/") + file_list[i].fileName();
+                des_path =  despath + QString("/") + file_list[i].fileName();
+                qDebug() << str_path << des_path;
                 QFile::copy(str_path, des_path);
             }
             else if(file_list[i].isDir())
@@ -56,12 +51,12 @@ void MyTcpSocket::Copy_Dir_File(QString strpath, QString despath)
                     continue;
                 }
                 str_path = strpath + QString("/") + file_list[i].fileName();
-                des_path =  des_path + QString("/") + file_list[i].fileName();
+                des_path =  despath + QString("/") + file_list[i].fileName();
+
+                qDebug() << str_path << des_path;
                 Copy_Dir_File(str_path, des_path);
             }
         }
-    }
-
 
 }
 
@@ -794,17 +789,29 @@ void MyTcpSocket::remsg()
            QString login_name = Share_file_path.mid(frist_index + 1, second_index - (frist_index + 1));
            QString FileName = Share_file_path.right(Share_file_path.size() - index - 1);
 
-           QString despath = QString(".") + des_path;
+           QString despath = QString(".") + des_path + QString("/") + FileName;
            qDebug() << "des_path:" << des_path << "Share_file_path:" << Share_file_path << "Filename:" << FileName << "despath:" << despath << "login_name:" << login_name;
 
            PDU * respdu = mkPDU(0);
            respdu->uiMsgType = ENUM_MSG_TYPE_SHARE_FILE_RESPOND;
            if(flag == 1)
            {
-               qDebug() << "share ok...";
-               MyTcpSocket::Copy_Dir_File(Share_file_path, despath);
+                qDebug() << "share ok...";
+
+               QFileInfo file(Share_file_path);
+               if(file.isFile())
+               {
+                   QFile::copy(Share_file_path, despath);
+
+               }
+               else if(file.isDir())
+               {
+                   Copy_Dir_File(Share_file_path, despath);
+               }
+
                strcpy(respdu->caData, SHARE_FILE_OK);
                MyTcpServer::getInstance().resend(login_name.toStdString().c_str(), respdu);
+
            }
            else
            {
