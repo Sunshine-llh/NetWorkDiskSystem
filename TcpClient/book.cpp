@@ -404,20 +404,57 @@ void Book:: Share_File()
 
 }
 
-
 //点击移动文件按钮
 void Book::Mv_File()
 {
     qDebug() << "点击移动文件按钮...";
+    QListWidgetItem *Item = m_pBookListW->currentItem();
+    if(Item == NULL)
+    {
+        QMessageBox::warning(this, "文件移动", "请选择移动的文件！");
+    }
+    else
+    {
+        Mv_File_name = Item->text();
+        Mv_File_path = TcpClient::getInstance().get_Cur_path() + "/" + Mv_File_name;
+        qDebug() << "Mv_File_name:" << Mv_File_name << "Mv_File_path:" << Mv_File_path;
+        m_Mv_PathFilePB->setEnabled(true);
+    }
+
 }
 
 //选择目标目录按钮
 void Book::Selected_Dir_path()
 {
     qDebug() << "点击目标目录按钮...";
+    QListWidgetItem *Item = m_pBookListW->currentItem();
+
+    if(Item == NULL)
+    {
+        QMessageBox::warning(this, "文件移动", "请选择文件移动的位置！");
+    }
+    else
+    {
+        QString Mv_Dir_name = Item->text();
+        Mv_path = TcpClient::getInstance().get_Cur_path() + "/" + Mv_Dir_name;
+        qDebug() << "Mv_Dir_name:" << Mv_Dir_name << "Mv_path:" << Mv_path;
+
+        PDU *pdu = mkPDU(Mv_File_path.size() + Mv_path.size() +2);
+        pdu->uiMsgType = ENUM_MSG_TYPE_MOVE_FILE_REQUEST;
+
+        sprintf(pdu->caData, "%d %d %s", Mv_File_path.size(),Mv_path.size(), Mv_File_name.toStdString().c_str());
+        memcpy(pdu->caMsg, Mv_File_path.toStdString().c_str(), Mv_File_path.size());
+        memcpy((char*)(pdu->caMsg) + (Mv_File_path.size() + 1), Mv_path.toStdString().c_str(), Mv_path.size());
+
+        qDebug() << Mv_File_path.size() << Mv_path.size();
+        TcpClient::getInstance().getTcpSocket().write((char*)pdu, pdu->uiPDULen);
+        free(pdu);
+        pdu = NULL;
+    }
 
 
 }
+
 //展示服务器发送过来的目录文件列表
 void Book::update_Booklist(const PDU *pdu)
 {

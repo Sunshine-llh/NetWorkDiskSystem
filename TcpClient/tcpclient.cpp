@@ -458,6 +458,13 @@ void TcpClient::show_information()
            qDebug() << "客户端接收好友文件共享回复...";
            QMessageBox::information(this, "文件分享", pdu->caData);
        }
+
+       //客户端接收移动文件回复
+       case ENUM_MSG_TYPE_MOVE_FILE_RESPOND:
+       {
+           qDebug() << "客户端接收移动文件回复...";
+           QMessageBox::information(this, "文件移动", pdu->caData);
+       }
        default:
        {
            break;

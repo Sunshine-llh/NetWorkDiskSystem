@@ -825,6 +825,59 @@ void MyTcpSocket::remsg()
            break;
 
        }
+
+       //接收文件移动的请求
+       case ENUM_MSG_TYPE_MOVE_FILE_REQUEST:
+       {
+           qDebug() << "接收文件移动的请求...";
+
+           char File_name[32] = {"\0"};
+           int Mv_File_path_size, Mv_path_size;
+           sscanf(pdu->caData, "%d%d%s", &Mv_File_path_size,&Mv_path_size, File_name);
+
+           char *Mv_File_path = new char[Mv_File_path_size + 1];
+           char *Mv_path = new char[Mv_path_size + 1 + 32];
+
+           memset(Mv_File_path, '\0', Mv_File_path_size + 1);
+           memset(Mv_path, '\0', Mv_path_size + 1 + 32);
+           memcpy(Mv_File_path, pdu->caMsg, Mv_File_path_size);
+           memcpy(Mv_path, (char*)(pdu->caMsg) + (Mv_File_path_size + 1), Mv_path_size);
+
+           qDebug() << "File_name:" << File_name << "Mv_File_path_size:" << Mv_File_path_size  << "Mv_path_size:" << Mv_path_size << "Mv_File_path:" << Mv_File_path << "Mv_path:" << Mv_path;
+
+           PDU *respdu = mkPDU(0);
+           respdu->uiMsgType = ENUM_MSG_TYPE_MOVE_FILE_RESPOND;;
+
+           QFileInfo fileinfo(Mv_path);
+           if(fileinfo.isFile())
+           {
+               qDebug() << "文件...";
+               strcpy(respdu->caData, MOVE_FILE_FAILURED);
+           }
+           else if(fileinfo.isDir())
+           {
+               qDebug() << "目录...";
+               strcat(Mv_path, "/");
+               strcat(Mv_path, File_name);
+               QFile file(Mv_File_path);
+
+               bool res = QFile::rename(Mv_File_path, Mv_path);
+
+               if(res)
+               {
+                   strcpy(respdu->caData, MOVE_FILE_OK);
+               }
+               else
+               {
+                   strcpy(respdu->caData, COMMON_ERR);
+               }
+
+           }
+
+           write((char*)respdu, respdu->uiPDULen);
+           free(respdu);
+           respdu = NULL;
+       }
        default:
        {
            break;

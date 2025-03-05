@@ -46,6 +46,9 @@ private:
     QString Save_path;
     bool Uploead_statu;
     QString File_name;
+    QString Mv_File_name;
+    QString Mv_File_path;
+    QString Mv_path;
 
 
 signals:
