@@ -11,6 +11,7 @@ public:
     static MyTcpServer &getInstance();
     void incomingConnection(qintptr handle);
     void resend(const char* friend_name, PDU *pdu);
+    void resend_(const char* friend_name, PDU *pdu);
 private:
     QList<MyTcpSocket*> mysocketlist;
 public slots:

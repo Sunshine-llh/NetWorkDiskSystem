@@ -20,6 +20,7 @@ private:
 public:
     explicit MyTcpSocket(QObject *parent = nullptr);
     QString get_login_name();
+    void Copy_Dir_File(QString strpath, QString despath);
 public slots:
     void remsg();
     void disconnected();

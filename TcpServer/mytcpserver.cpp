@@ -50,6 +50,7 @@ void MyTcpServer::resend(const char *client_name, PDU *pdu)
 
     QString str_name = client_name;
 
+
     for(int i=0; i<mysocketlist.size();i++)
     {
         qDebug() << mysocketlist.at(i)->get_login_name();
@@ -62,4 +63,31 @@ void MyTcpServer::resend(const char *client_name, PDU *pdu)
             break;
         }
     }
+}
+
+//回复客户端分享者
+void MyTcpServer::resend_(const char *friend_name, PDU *pdu)
+{
+     qDebug() << "friend_name:" << friend_name << "回复客户端分享者...";
+
+     if(friend_name == NULL || pdu == NULL)
+     {
+         return;
+     }
+
+     QString str_name = friend_name;
+
+     for(int i=0; i<mysocketlist.size();i++)
+     {
+         qDebug() << mysocketlist.at(i)->get_login_name();
+
+         if(mysocketlist.at(i)->get_login_name() == str_name)
+         {
+             qDebug() << "resend..." << mysocketlist.at(i)->get_login_name();
+
+             mysocketlist.at(i)->write((char*)pdu,pdu->uiPDULen);
+             break;
+         }
+     }
+
 }

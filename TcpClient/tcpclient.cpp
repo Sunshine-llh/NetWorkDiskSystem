@@ -422,7 +422,41 @@ void TcpClient::show_information()
            int res = QMessageBox::question(this, "文件分享", msg);
            qDebug() << "msg:" << msg << "res:" << res;
 
+           char *pos = strrchr(File_path, '/');
+           int flag = 0;
+           PDU *respdu= mkPDU(pdu->uiMsgLen);
+           respdu->uiMsgType = ENUM_MSG_TYPE_SHARE_FILE_RESPOND;
 
+           if(QMessageBox::Yes == res)
+           {
+               if(pos != NULL)
+               {
+                   flag = 1;
+                   qDebug() << pos + 1 << "flag:" << flag;
+
+                   sprintf(respdu->caData, "%s %d", TcpClient::getInstance().get_login_name().toStdString().c_str(), flag);
+
+                   strncpy((char*)respdu->caMsg, (char*)pdu->caMsg, pdu->uiMsgLen);
+               }
+           }
+
+           else
+           {
+               sprintf(respdu->caData, "%s%d", TcpClient::getInstance().get_login_name().toStdString().c_str(), flag);
+               strncpy((char*)respdu->caMsg, (char*)pdu->caMsg, pdu->uiMsgLen);
+           }
+
+           m_tcpScoket.write((char*)respdu, respdu->uiPDULen);
+           free(respdu);
+           respdu = NULL;
+           break;
+       }
+
+       //客户端接收好友文件共享回复
+       case ENUM_MSG_TYPE_SHARE_FILE_RESPOND:
+       {
+           qDebug() << "客户端接收好友文件共享回复...";
+           QMessageBox::information(this, "文件分享", pdu->caData);
        }
        default:
        {

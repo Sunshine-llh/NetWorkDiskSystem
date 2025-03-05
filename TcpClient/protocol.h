@@ -31,6 +31,8 @@
 #define DEL_FILE_FAILURED "delete file failured: is diretory"
 #define UPLOAD_FILE_OK "upload file ok"
 #define UPLOAD_FILE_FAILURED "upload file failured"
+#define SHARE_FILE_OK "share file ok"
+#define SHARE_FILE_FAILURED "share file failured"
 #define MOVE_FILE_OK "move file ok"
 #define MOVE_FILE_FAILURED "move file failured:is reguler file"
 #define COMMON_ERR "operate failed: system is busy"

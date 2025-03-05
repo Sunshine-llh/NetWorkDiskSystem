@@ -20,6 +20,51 @@ QString MyTcpSocket::get_login_name()
     return this->login_name;
 }
 
+//copy目录文件
+void MyTcpSocket::Copy_Dir_File(QString strpath, QString despath)
+{
+    qDebug() << "正在复制文件..." << "str_path:" << strpath << "des_path:" << despath;
+    QDir dir;
+    dir.mkdir(despath);
+    dir.setPath(strpath);
+    QFileInfoList file_list = dir.entryInfoList();
+
+    qDebug() << file_list << file_list.size();
+    QString str_path;
+    QString des_path;
+
+    if(file.size() == 0)
+    {
+        QFile::copy(str_path, des_path);
+    }
+    else
+    {
+        for(int i=0;i<file_list.size();i++)
+        {
+            qDebug() << file_list[i].fileName() << file_list[i].filePath();
+
+            if(file_list[i].isFile())
+            {
+                str_path = strpath + QString("/") + file_list[i].fileName();
+                des_path =  des_path + QString("/") + file_list[i].fileName();
+                QFile::copy(str_path, des_path);
+            }
+            else if(file_list[i].isDir())
+            {
+                if(file_list[i].fileName() == "." || file_list[i].fileName() == "..")
+                {
+                    continue;
+                }
+                str_path = strpath + QString("/") + file_list[i].fileName();
+                des_path =  des_path + QString("/") + file_list[i].fileName();
+                Copy_Dir_File(str_path, des_path);
+            }
+        }
+    }
+
+
+}
+
 //断开连接函数
 void MyTcpSocket::disconnected()
 {
@@ -703,9 +748,6 @@ void MyTcpSocket::remsg()
            sscanf(pdu->caData, "%s %d", login_name, &share_num);
            qDebug() << "login_name1:" << login_name << "share_num:" << share_num;
 
-           sscanf(pdu->caData, "%s%d", login_name, &share_num);
-           qDebug() << "login_name2:" << login_name << "share_num:" << share_num;
-
            QString File_path = QString("%1").arg((char*)(pdu->caMsg) + share_num * 32);
 
            qDebug() << "File_path:" << File_path;
@@ -713,7 +755,7 @@ void MyTcpSocket::remsg()
            char send_name[32] = {'\0'};
            PDU *respdu = mkPDU(pdu->uiPDULen - share_num * 32);
            respdu->uiMsgType = ENUM_MSG_TYPE_SHARE_FILE_REQUEST;
-           strcpy(respdu->caData, login_name);
+           strncpy(respdu->caData, login_name, 32);
            memcpy(respdu->caMsg, (char*)pdu->caMsg + share_num * 32, pdu->uiMsgLen - share_num * 32);
 
            for(int i=0;i<share_num;i++)
@@ -735,8 +777,45 @@ void MyTcpSocket::remsg()
        //接收文件分享的响应
        case ENUM_MSG_TYPE_SHARE_FILE_RESPOND:
        {
-           qDebug() << "接收客户端是否同意文件分享...";
+           qDebug() << "接收客户端响应文件分享...";
 
+           char send_name[32] = {'\0'};
+           int flag;
+
+           sscanf(pdu->caData, "%s%d", send_name, &flag);
+           QString des_path = QString('/') + login_name;
+
+           qDebug() << "login_name:" << login_name << "flag:" << flag;
+
+           QString Share_file_path = QString("%1").arg((char*)pdu->caMsg);
+           int index = Share_file_path.lastIndexOf("/");
+           int frist_index = Share_file_path.indexOf('/');
+           int second_index = Share_file_path.indexOf('/',frist_index + 1);
+           QString login_name = Share_file_path.mid(frist_index + 1, second_index - (frist_index + 1));
+           QString FileName = Share_file_path.right(Share_file_path.size() - index - 1);
+
+           QString despath = QString(".") + des_path;
+           qDebug() << "des_path:" << des_path << "Share_file_path:" << Share_file_path << "Filename:" << FileName << "despath:" << despath << "login_name:" << login_name;
+
+           PDU * respdu = mkPDU(0);
+           respdu->uiMsgType = ENUM_MSG_TYPE_SHARE_FILE_RESPOND;
+           if(flag == 1)
+           {
+               qDebug() << "share ok...";
+               MyTcpSocket::Copy_Dir_File(Share_file_path, despath);
+               strcpy(respdu->caData, SHARE_FILE_OK);
+               MyTcpServer::getInstance().resend(login_name.toStdString().c_str(), respdu);
+           }
+           else
+           {
+               qDebug() << "share failured...";
+               strcpy(respdu->caData, SHARE_FILE_FAILURED);
+               MyTcpServer::getInstance().resend(login_name.toStdString().c_str(), respdu);
+           }
+
+           free(respdu);
+           respdu = NULL;
+           break;
 
        }
        default:
